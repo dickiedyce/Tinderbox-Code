@@ -1,0 +1,73 @@
+// Advanced Tinderbox Action: Smart Date Processing
+// Description: Processes dates and sets attributes based on temporal relationships
+// Usage: Add to Rule to automatically categorize notes by date attributes
+// Author: Tinderbox Cookbook
+// Date: November 2025
+
+// Only process notes that have a date set
+if($Date != "never"){
+    
+    // Calculate days from today
+    var(daysFromToday){
+        daysFromToday = days($Date, date("today"));
+    }
+    
+    // Set temporal categories
+    if(daysFromToday < -30){
+        $TemporalCategory = "Past";
+        $Color = "gray";
+    } else if(daysFromToday < 0){
+        $TemporalCategory = "Recent Past";
+        $Color = "blue";
+    } else if(daysFromToday == 0){
+        $TemporalCategory = "Today";
+        $Color = "green";
+    } else if(daysFromToday <= 7){
+        $TemporalCategory = "This Week";
+        $Color = "yellow";
+    } else if(daysFromToday <= 30){
+        $TemporalCategory = "This Month";
+        $Color = "orange";
+    } else {
+        $TemporalCategory = "Future";
+        $Color = "purple";
+    }
+    
+    // Set specific weekday information
+    if($Date.weekday >= 1 && $Date.weekday <= 5){
+        $IsWeekday = true;
+        if(!$Tags.contains("weekday")){
+            $Tags = $Tags + ";weekday";
+        }
+    } else {
+        $IsWeekday = false;
+        if(!$Tags.contains("weekend")){
+            $Tags = $Tags + ";weekend";
+        }
+    }
+    
+    // Quarter-based tagging
+    var(quarter){
+        if($Date.month <= 3){
+            quarter = "Q1";
+        } else if($Date.month <= 6){
+            quarter = "Q2";
+        } else if($Date.month <= 9){
+            quarter = "Q3";
+        } else {
+            quarter = "Q4";
+        }
+        
+        if(!$Tags.contains(quarter)){
+            $Tags = $Tags + ";" + quarter;
+        }
+    }
+    
+    // Format readable date summary
+    $DateSummary = format($Date, "D M Y") + " (" + $TemporalCategory + ")";
+    
+} else {
+    // Handle notes without dates
+    $TemporalCategory = "Undated";
+    $Color = "white";
+}

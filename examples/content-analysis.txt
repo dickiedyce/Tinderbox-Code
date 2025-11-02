@@ -1,0 +1,122 @@
+// Advanced Tinderbox Action: Content Analysis and Classification  
+// Description: Analyzes note content and automatically classifies by type and sentiment
+// Usage: Add to Rule for automatic content classification of new/modified notes
+// Author: Tinderbox Cookbook
+// Date: November 2025
+
+// Only process notes with substantial text content
+if($Text.size() > 10){
+    
+    // Word count and readability metrics
+    var(wordList, wordCount, sentenceCount){
+        wordList = $Text.split("\\s+");
+        wordCount = wordList.count;
+        sentenceCount = $Text.split("[\\.\\!\\?]+").count;
+        
+        $WordCount = wordCount;
+        $SentenceCount = sentenceCount;
+        
+        if(wordCount > 0 && sentenceCount > 0){
+            $AvgWordsPerSentence = round(wordCount / sentenceCount);
+        }
+    }
+    
+    // Content type classification based on patterns
+    if($Text.icontains("\\b(todo|task|action|complete|done)\\b")){
+        $ContentType = "Task";
+        if(!$Tags.contains("task-content")){
+            $Tags = $Tags + ";task-content";
+        }
+    } else if($Text.icontains("\\b(meeting|agenda|attendees|minutes)\\b")){
+        $ContentType = "Meeting";
+        if(!$Tags.contains("meeting-content")){
+            $Tags = $Tags + ";meeting-content";
+        }
+    } else if($Text.icontains("\\b(idea|concept|brainstorm|innovation)\\b")){
+        $ContentType = "Idea";
+        if(!$Tags.contains("idea-content")){
+            $Tags = $Tags + ";idea-content";
+        }
+    } else if($Text.icontains("\\b(research|study|analysis|findings)\\b")){
+        $ContentType = "Research";
+        if(!$Tags.contains("research-content")){
+            $Tags = $Tags + ";research-content";
+        }
+    } else {
+        $ContentType = "General";
+    }
+    
+    // Sentiment analysis based on keyword patterns
+    var(positiveWords, negativeWords, urgentWords){
+        positiveWords = 0;
+        negativeWords = 0;
+        urgentWords = 0;
+        
+        // Count positive indicators
+        if($Text.icontains("\\b(good|great|excellent|success|achieve|complete)\\b")){
+            positiveWords = positiveWords + 1;
+        }
+        if($Text.icontains("\\b(progress|improvement|solution|resolved)\\b")){
+            positiveWords = positiveWords + 1;
+        }
+        
+        // Count negative indicators  
+        if($Text.icontains("\\b(problem|issue|concern|fail|error|difficult)\\b")){
+            negativeWords = negativeWords + 1;
+        }
+        if($Text.icontains("\\b(delay|blocked|stuck|challenge)\\b")){
+            negativeWords = negativeWords + 1;
+        }
+        
+        // Count urgency indicators
+        if($Text.icontains("\\b(urgent|asap|immediate|deadline|critical)\\b")){
+            urgentWords = urgentWords + 1;
+        }
+        
+        // Determine overall sentiment
+        if(positiveWords > negativeWords){
+            $Sentiment = "Positive";
+            $Color = "green";
+        } else if(negativeWords > positiveWords){
+            $Sentiment = "Negative"; 
+            $Color = "red";
+        } else {
+            $Sentiment = "Neutral";
+            $Color = "blue";
+        }
+        
+        // Handle urgency
+        if(urgentWords > 0){
+            if(!$Tags.contains("urgent")){
+                $Tags = $Tags + ";urgent";
+            }
+            if($Priority == "" || $Priority == "Low"){
+                $Priority = "High";
+            }
+        }
+    }
+    
+    // Complexity assessment
+    if($AvgWordsPerSentence > 20){
+        $Complexity = "High";
+    } else if($AvgWordsPerSentence > 15){
+        $Complexity = "Medium";
+    } else {
+        $Complexity = "Low";
+    }
+    
+    // Update processing information
+    $LastAnalyzed = date("now");
+    $AnalysisSummary = $ContentType + " | " + $Sentiment + " | " + wordCount + " words";
+    
+    // Add analysis tag
+    if(!$Tags.contains("content-analyzed")){
+        $Tags = $Tags + ";content-analyzed";
+    }
+    
+} else {
+    // Handle notes with minimal content
+    $ContentType = "Stub";
+    $Sentiment = "Neutral";
+    $WordCount = 0;
+}

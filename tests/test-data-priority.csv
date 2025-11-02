@@ -1,0 +1,9 @@
+# Test Action 1: Basic Priority Check
+# Test the color-by-priority example
+
+Priority,Expected_Color
+High,red
+Medium,yellow
+Low,green
+,white
+Invalid,white

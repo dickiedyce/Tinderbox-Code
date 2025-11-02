@@ -1,0 +1,87 @@
+// Advanced Tinderbox Action: Hierarchical Status Propagation
+// Description: Propagates status from children to parents in project hierarchies
+// Usage: Add to Rule to keep parent status in sync with child progress
+// Author: Tinderbox Cookbook  
+// Date: November 2025
+
+// Only process container notes (notes with children)
+if(children.count > 0){
+    
+    // Collect all child statuses
+    var(childStatuses){
+        childStatuses = collect(children, $Status);
+    }
+    
+    // Count different status types
+    var(completedCount, inProgressCount, notStartedCount){
+        completedCount = sum_if(children, $Status == "Complete", 1);
+        inProgressCount = sum_if(children, $Status == "In Progress", 1); 
+        notStartedCount = sum_if(children, $Status == "Not Started", 1);
+    }
+    
+    // Determine parent status based on children
+    if(completedCount == children.count){
+        // All children complete
+        $Status = "Complete";
+        $Color = "green";
+        $Progress = 100;
+    } else if(notStartedCount == children.count){
+        // No children started
+        $Status = "Not Started";
+        $Color = "white";
+        $Progress = 0;
+    } else {
+        // Mixed status - in progress
+        $Status = "In Progress";
+        $Color = "yellow";
+        // Calculate percentage complete
+        $Progress = round((completedCount / children.count) * 100);
+    }
+    
+    // Check for overdue children
+    var(overdueCount){
+        overdueCount = sum_if(children, ($DueDate < date("today")) && ($Status != "Complete"), 1);
+        
+        if(overdueCount > 0){
+            if(!$Tags.contains("has-overdue")){
+                $Tags = $Tags + ";has-overdue";
+            }
+            // Escalate priority if children are overdue
+            if($Priority == "Low"){
+                $Priority = "Medium";
+            } else if($Priority == "Medium"){
+                $Priority = "High";
+            }
+        } else {
+            // Remove overdue tag if no longer applicable
+            $Tags = $Tags.replace("has-overdue;", "").replace(";has-overdue", "");
+        }
+    }
+    
+    // Calculate estimated completion date based on children
+    if($Status != "Complete"){
+        var(latestChildDate){
+            latestChildDate = max(collect_if(children, $Status != "Complete", $DueDate));
+            if(latestChildDate != ""){
+                $EstimatedCompletion = latestChildDate;
+            }
+        }
+    }
+    
+    // Update summary information
+    $StatusSummary = $Status + " (" + completedCount + "/" + children.count + " complete)";
+    
+    // Add hierarchical tags
+    if(!$Tags.contains("parent-task")){
+        $Tags = $Tags + ";parent-task";
+    }
+    
+} else {
+    // Leaf node - ensure it has appropriate tags
+    if($Tags.contains("parent-task")){
+        $Tags = $Tags.replace("parent-task;", "").replace(";parent-task", "");
+    }
+    if(!$Tags.contains("leaf-task")){
+        $Tags = $Tags + ";leaf-task";
+    }
+}

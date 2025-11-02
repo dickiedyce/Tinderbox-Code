@@ -1,0 +1,146 @@
+// Modern Tinderbox v10 Action: Advanced Data Processing with Dictionaries
+// Description: Demonstrates v10 dictionary features, stream processing, and modern syntax
+// Usage: Add to Rule for sophisticated data analysis and classification
+// Author: Tinderbox v10 Workspace
+// Date: November 2025
+
+// Example of modern v10 dictionary usage for data classification
+var(classification, metrics, keywords){
+    
+    // Initialize classification dictionary
+    classification = dictionary("type:unknown;confidence:0;keywords:");
+    
+    // Initialize metrics dictionary  
+    metrics = dictionary("words:0;sentences:0;readability:0");
+    
+    // Only process substantial content
+    if($Text.size() > 20){
+        
+        // Modern stream processing approach (v10)
+        var(parser){
+            parser = $Text;
+            
+            // Count metrics using new v10 methods
+            metrics["words"] = parser.wordCount();
+            metrics["sentences"] = parser.sentences().count;
+            
+            // Calculate readability score
+            if(metrics["sentences"] > 0){
+                metrics["readability"] = (metrics["words"] / metrics["sentences"]);
+            }
+        }
+        
+        // Advanced pattern matching with new regex features
+        var(patterns){
+            patterns = dictionary(
+                "meeting:meeting|agenda|attendees|minutes|discussion;"+
+                "task:todo|task|action|complete|deadline|priority;"+
+                "research:study|analysis|findings|research|data|conclusion;"+
+                "idea:concept|brainstorm|innovation|creative|inspiration;"+
+                "project:project|milestone|deliverable|scope|timeline"
+            );
+            
+            // Test each pattern using modern containsAnyOf method
+            var(bestMatch, maxConfidence){
+                bestMatch = "unknown";
+                maxConfidence = 0;
+                
+                patterns.keys().each(category){
+                    var(categoryPatterns, matches){
+                        categoryPatterns = patterns[category].split(";");
+                        matches = 0;
+                        
+                        categoryPatterns.each(pattern){
+                            if($Text.icontains(pattern)){
+                                matches = matches + 1;
+                            }
+                        }
+                        
+                        var(confidence){
+                            confidence = (matches / categoryPatterns.count) * 100;
+                            if(confidence > maxConfidence){
+                                maxConfidence = confidence;
+                                bestMatch = category;
+                            }
+                        }
+                    }
+                }
+                
+                classification["type"] = bestMatch;
+                classification["confidence"] = maxConfidence;
+            }
+        }
+        
+        // Extract keywords using new v10 word processing
+        var(wordList, filteredWords){
+            wordList = $Text.wordList();
+            filteredWords = "";
+            
+            // Filter significant words (length > 3, not common words)
+            wordList.each(word){
+                if(word.size() > 3 && !word.icontains("the|and|but|for|are|you|all|can|had|her|was|one|our|out|day|get|has|him|how|man|may|new|now|old|see|two|way|who|boy|did|its|let|put|say|she|too|use")){
+                    if(filteredWords != ""){
+                        filteredWords = filteredWords + ";";
+                    }
+                    filteredWords = filteredWords + word.lowercase();
+                }
+            }
+            classification["keywords"] = filteredWords.split(";").unique().format(";");
+        }
+        
+        // Modern attribute assignment using dictionary values
+        $ContentType = classification["type"];
+        $Confidence = classification["confidence"];
+        $Keywords = classification["keywords"];
+        $WordCount = metrics["words"];
+        $ReadabilityScore = metrics["readability"];
+        
+        // Set visual indicators based on classification
+        if(classification["confidence"] > 70){
+            $Color = "green";  // High confidence
+        } else if(classification["confidence"] > 40){
+            $Color = "yellow"; // Medium confidence  
+        } else {
+            $Color = "gray";   // Low confidence
+        }
+        
+        // Add processing tags using modern list operations
+        var(processingTags){
+            processingTags = list("analyzed", "v10-processed", classification["type"]);
+            processingTags.each(tag){
+                if(!$Tags.contains(tag)){
+                    $Tags = $Tags + ";" + tag;
+                }
+            }
+        }
+        
+        // Generate summary using modern string methods
+        $ProcessingSummary = "Type: " + classification["type"] + 
+                           " (confidence: " + classification["confidence"].format(0) + "%) | " +
+                           "Words: " + metrics["words"] + 
+                           " | Readability: " + metrics["readability"].format(1);
+        
+        // Set processing timestamp
+        $LastAnalyzed = date("now");
+        
+    } else {
+        // Handle minimal content
+        $ContentType = "stub";
+        $Confidence = 0;
+        $ProcessingSummary = "Insufficient content for analysis";
+    }
+}
+
+// Optional: Create child notes for each major keyword (advanced v10 feature)
+if($Keywords.count > 0 && $Keywords.count < 8){
+    $Keywords.split(";").each(keyword){
+        if(!contains(keyword)){
+            var(childNote){
+                childNote = create(keyword);
+                childNote.$Text = "Keyword extracted from: " + $Name;
+                childNote.$KeywordSource = $Path;
+                childNote.$Color = "blue";
+            }
+        }
+    }
+}

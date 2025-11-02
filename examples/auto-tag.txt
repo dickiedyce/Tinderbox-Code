@@ -1,0 +1,51 @@
+// Example Tinderbox Action: Auto-assign Tags Based on Content
+// This action automatically assigns tags based on keywords in note text
+// Usage: Add to Rule or OnAdd action for automatic tagging
+
+// Only process if note has text content
+if($Text != ""){
+    
+    // Add processing tag (only if not already present)
+    if(!$Tags.contains("auto-tagged")){
+        $Tags = $Tags + ";auto-tagged";
+    }
+    
+    // Check for meeting-related keywords (case-insensitive)
+    if($Text.icontains("meeting") || $Text.icontains("agenda") || $Text.icontains("conference")){
+        if(!$Tags.contains("meetings")){
+            $Tags = $Tags + ";meetings";
+        }
+    }
+    
+    // Check for project-related keywords  
+    if($Text.icontains("project") || $Text.icontains("milestone") || $Text.icontains("deliverable")){
+        if(!$Tags.contains("projects")){
+            $Tags = $Tags + ";projects";  
+        }
+    }
+    
+    // Check for task-related keywords
+    if($Text.icontains("todo") || $Text.icontains("task") || $Text.icontains("action item")){
+        if(!$Tags.contains("tasks")){
+            $Tags = $Tags + ";tasks";
+        }
+    }
+    
+    // Check for research-related content
+    if($Text.icontains("research") || $Text.icontains("study") || $Text.icontains("analysis")){
+        if(!$Tags.contains("research")){
+            $Tags = $Tags + ";research";
+        }
+    }
+    
+    // Check for urgent/important indicators
+    if($Text.icontains("urgent") || $Text.icontains("asap") || $Text.icontains("deadline")){
+        if(!$Tags.contains("urgent")){
+            $Tags = $Tags + ";urgent";
+        }
+        // Also set priority if not already set
+        if($Priority == ""){
+            $Priority = "High";
+        }
+    }
+}

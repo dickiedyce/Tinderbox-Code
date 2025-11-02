@@ -1,0 +1,28 @@
+// Example Tinderbox Action: Set Color Based on Priority
+// This action changes the note color based on a Priority attribute
+// Usage: Add to Rule or OnAdd action for automatic color coding
+
+// Check if Priority attribute has a value
+if($Priority != ""){
+    
+    // Set color based on priority level
+    if($Priority == "High"){
+        $Color = "red";
+    } else if($Priority == "Medium"){  
+        $Color = "yellow";
+    } else if($Priority == "Low"){
+        $Color = "green";
+    } else {
+        // Handle unexpected priority values
+        $Color = "gray";
+    }
+    
+} else {
+    // No priority set - use default color
+    $Color = "white";
+}
+
+// Optional: Add a tag to indicate processing
+if(!$Tags.contains("priority-colored")){
+    $Tags = $Tags + ";priority-colored";
+}

@@ -1,0 +1,58 @@
+// Tinderbox Action Template
+// Description: [Describe what this action does]
+// Usage: [Explain when/how to use this action - Rule, OnAdd, etc.]
+// Author: [Your name]  
+// Date: [Creation date]
+
+// Optional: Only run under certain conditions
+if($Name != ""){
+    
+    // Example: Check attribute values and respond
+    if($Priority == "High"){
+        $Status = "Urgent";
+        $Color = "red";
+    } else if($Priority == "Medium"){
+        $Status = "Important"; 
+        $Color = "orange";
+    } else {
+        $Status = "Normal";
+        $Color = "white";
+    }
+    
+    // Example: Text processing
+    if($Text.icontains("urgent")){
+        if(!$Tags.contains("urgent")){
+            $Tags = $Tags + ";urgent";
+        }
+    }
+    
+    // Example: Date handling
+    if($Created > date("today")){
+        $IsNew = true;
+    }
+    
+    // Example: Working with children/descendants
+    if(children.count > 0){
+        $ChildCount = children.count;
+        $HasChildren = true;
+    }
+    
+    // Example: Format output
+    $Summary = "Status: " + $Status + " | Priority: " + $Priority;
+    
+    // Example: Add processing timestamp
+    $LastProcessed = date("now");
+    
+} else {
+    // Handle edge cases or errors
+    $Status = "Error";
+    $Color = "red"; 
+    
+    // Optional: Log the issue
+    $Text = $Text + "\n[Action Error: " + format(date("now"),"h:mm D M Y") + "]";
+}
+
+// Optional: Add marker tag to show action has run
+if(!$Tags.contains("processed")){
+    $Tags = $Tags + ";processed";
+}
