@@ -1,0 +1,36 @@
+# Prototype definitions
+prototypes:
+  - name: "pFolder"
+    path: "/Prototypes/pFolder"
+    badge: "folder2"
+    template: "/Templates/Preview Folder"
+    isPrototype: true
+    
+  - name: "pStory"
+    path: "/Prototypes/pStory"
+    badge: "chat-ellipsis"
+    template: "/Templates/Preview Story"
+    displayedAttributes: "StoryRole;StoryWant;StoryReason"
+    defaultAttributes:
+      StoryRole: "user role"
+      StoryWant: "describe what they want"
+      StoryReason: "explain the value"
+    isPrototype: true
+    
+  - name: "pRole"
+    path: "/Prototypes/pRole"
+    badge: "user"
+    template: "/Templates/Preview Leaf"
+    isPrototype: true
+    
+  - name: "pFR"
+    path: "/Prototypes/pFR"
+    badge: "gear"
+    template: "/Templates/Preview Leaf"
+    isPrototype: true
+    
+  - name: "pNFR"
+    path: "/Prototypes/pNFR"
+    badge: "speedometer"
+    template: "/Templates/Preview Leaf"
+    isPrototype: true

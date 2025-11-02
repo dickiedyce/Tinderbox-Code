@@ -4,14 +4,24 @@ A comprehensive workspace for developing, testing, and organizing Tinderbox acti
 
 ## Overview
 
-This workspace provides a structured environment for creating Tinderbox actions, which are small code snippets that can be executed within the Tinderbox personal knowledge management application.
+This workspace provides a structured environment for creating Tinderbox actions, which are small code snippets that can be executed within the Tinderbox personal knowledge management application. It now includes both traditional action code files and a modern **modular generation system** for maintaining complex installers.
 
 ## Directory Structure
 
 - **`/actions/`** - Main action code files
-  - **Modular System**: `core-utils.txt`, `attributes-manager.txt`, `prototype-builder.txt`, `template-builder.txt`, `project-structure.txt`, `workspace-initializer.txt`
-  - **Installation**: `installer_init_edict.txt` and `installer_init_rule.txt` for automated setup
+  - **Production Ready**: `complete-installer.txt` - Working project automation installer (210 lines)
+  - **Generated**: `generated-installer.txt` - Auto-generated from YAML definitions (225 lines)  
+  - **Template**: `template.txt` - Starting point for new actions
   - Store your primary Tinderbox action code here organized by functionality
+
+- **`/builder/`** - **NEW: Modular Generation System**
+  - **`build.py`** - Python script to generate installers from YAML definitions
+  - **`definitions/`** - Structured YAML files defining workspace components:
+    - `workspace.yaml` - Folder structure and basic configuration
+    - `prototypes.yaml` - All prototype definitions with templates and attributes  
+    - `templates.yaml` - HTML export templates
+    - `functions.yaml` - Complete library function modules
+  - **Benefits**: Modular maintenance, version control, validation, reproducible builds
 
 - **`/scripts/`** - Automation and utility scripts
   - Helper scripts and automation tools
@@ -31,10 +41,26 @@ This workspace provides a structured environment for creating Tinderbox actions,
 
 ## Getting Started
 
-1. Create your action code in the `actions/` directory
-2. Test your code using files in the `tests/` directory
-3. Document your actions in the `docs/` directory
-4. Share examples in the `examples/` directory
+### Quick Start
+1. **Use Existing Installer**: Copy `actions/complete-installer.txt` to a Tinderbox note's $Rule, set $RuleDisabled=false
+2. **Create Custom Installer**: Modify YAML definitions in `builder/definitions/` then run `python builder/build.py`
+3. **Test Actions**: Use sample data from `tests/` directory
+4. **Learn Patterns**: Study examples in `examples/` directory
+
+### Modular Generation Workflow
+```bash
+# Install dependencies (one time)
+pip install -r builder/requirements.txt
+
+# Validate definitions
+python builder/build.py --validate
+
+# Generate installer  
+python builder/build.py -o actions/my-installer.txt
+
+# Or use default output
+python builder/build.py  # outputs to actions/generated-installer.txt
+```
 
 ## Development Guidelines
 
@@ -99,16 +125,37 @@ The `examples/` directory contains sophisticated action patterns:
 - [Dot Operators Reference](https://www.eastgate.com/Tinderbox/cookbook/dotOperators.html) - Earlier documentation
 - [Expressions Reference](https://www.eastgate.com/Tinderbox/cookbook/Expressions.html) - Legacy functions guide
 
-## Modular Architecture
+## Modular Generation System
 
-This workspace uses a **modular architecture** for complex action code development:
+This workspace includes a **revolutionary modular generation system** that eliminates the need to maintain monolithic installer files:
 
-- **Core Modules**: Focused, reusable components for logging, attributes, prototypes, templates, and project structure
+### Traditional Approach (Still Supported)
+- **Monolithic Files**: `complete-installer.txt` (210 lines) - single large file with all functionality
+- **Manual Maintenance**: Edit code directly, difficult to track components
+- **Version Control**: Hard to see what changed between versions
+
+### New Modular Approach  
+- **Structured Definitions**: Separate YAML files for each component type
+- **Automated Generation**: Python script builds installer from definitions
+- **Component Isolation**: Modify prototypes, functions, templates independently
+- **Validation**: Built-in validation ensures definitions are correct
+- **Version Control**: Clear diffs on individual components, not monolithic code
+
+### Key Benefits
+- **🔧 Maintainable**: Edit individual components without touching others
+- **📋 Validated**: Automatic validation of all definition structures  
+- **🔄 Reproducible**: Generate consistent installers from same definitions
+- **📊 Trackable**: Git shows exactly what changed in each component
+- **🚀 Extensible**: Easy to add new prototypes, functions, or templates
+- **⚡ Fast**: Generate complete 225-line installer in seconds
+
+### Architecture
 - **Library Pattern**: Functions copied to `/Hints/Library/` for global access across Tinderbox documents  
-- **Installation System**: Automated setup using edict-based copying and workspace initialization
-- **Validation**: Comprehensive testing and error handling throughout all modules
+- **Rule-Based Installation**: Reliable one-time setup that disables itself
+- **Prototype System**: Complete inheritance hierarchy with templates and badges
+- **Professional Output**: Ready for production use in Tinderbox v10.2.0
 
-See [`/docs/modular-architecture.md`](docs/modular-architecture.md) for complete architectural documentation.
+See [`builder/README.md`](builder/README.md) for complete modular system documentation.
 
 ---
 

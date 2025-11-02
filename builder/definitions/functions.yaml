@@ -1,0 +1,120 @@
+# Function definitions for the library modules
+library_modules:
+  - name: "CoreUtils"
+    path: "/Hints/Library/CoreUtils"
+    badge: "code"
+    searchable: false
+    smartQuotes: false
+    functions:
+      - name: "logMessage"
+        params: ["message"]
+        body: |
+          $Text("/Log") = $Text("/Log") + message + "\n";
+          
+      - name: "setupContainer"
+        params: ["vPath", "vBadge"]
+        body: |
+          create(vPath);
+          $Badge(vPath) = vBadge;
+          
+      - name: "addPrefix"
+        params: ["prefix"]
+        body: |
+          if ($Name.substr(0, prefix.size()) != prefix) { 
+             $Name = prefix + $Name;
+          }
+          
+      - name: "childFolder"
+        params: ["vRoot", "vFolderName"]
+        body: |
+          // Simple direct creation without complex variable handling
+          create(vRoot, $Name(vRoot) + " " + vFolderName);
+          $Badge(vRoot + "/" + $Name(vRoot) + " " + vFolderName) = "folder2";
+
+  - name: "ProjectBuilder"
+    path: "/Hints/Library/ProjectBuilder"
+    badge: "code"
+    searchable: false
+    smartQuotes: false
+    functions:
+      - name: "buildProject"
+        params: []
+        body: |
+          logMessage("Building project structure for: " + $Name);
+          
+          // Set project prototype
+          $Prototype = "pFolder";
+          $Badge = "address-book";
+          
+          // Create project structure using simple approach
+          create($Path, $Name + " User Stories");
+          $OnAdd($Path + "/" + $Name + " User Stories") = "buildUserStory();";
+          $Prototype($Path + "/" + $Name + " User Stories") = "pFolder";
+          $Badge($Path + "/" + $Name + " User Stories") = "folder2";
+          
+          create($Path, $Name + " Roles");
+          $OnAdd($Path + "/" + $Name + " Roles") = "buildRole();";
+          $Prototype($Path + "/" + $Name + " Roles") = "pFolder";
+          $Badge($Path + "/" + $Name + " Roles") = "folder2";
+          
+          create($Path, $Name + " Functional Requirements");
+          $OnAdd($Path + "/" + $Name + " Functional Requirements") = "buildFR();";
+          $Prototype($Path + "/" + $Name + " Functional Requirements") = "pFolder";
+          $Badge($Path + "/" + $Name + " Functional Requirements") = "folder2";
+          
+          create($Path, $Name + " Non-Functional Requirements");
+          $OnAdd($Path + "/" + $Name + " Non-Functional Requirements") = "buildNFR();";
+          $Prototype($Path + "/" + $Name + " Non-Functional Requirements") = "pFolder";
+          $Badge($Path + "/" + $Name + " Non-Functional Requirements") = "folder2";
+          
+          logMessage("Project structure completed for: " + $Name);
+          
+      - name: "buildUserStory"
+        params: []
+        body: |
+          $Prototype = "pStory";
+          $HTMLExportTemplate = "Preview Story";
+          logMessage("Creating user story: " + $Name + " Set prototype to: " + $Prototype);
+          
+      - name: "buildRole"
+        params: []
+        body: |
+          $Prototype = "pRole";
+          logMessage("Creating role: " + $Name + " Set prototype to: " + $Prototype);
+          $Text = "Role Description:\n\nResponsibilities:\n- \n\nRequirements:\n- ";
+          
+      - name: "buildFR"
+        params: []
+        body: |
+          addPrefix("FR-");
+          $Prototype = "pFR";
+          logMessage("Creating functional requirement: " + $Name + " Set prototype to: " + $Prototype);
+          $Text = "Functional Requirement:\n\nAcceptance Criteria:\n- \n\nPriority: ";
+          
+      - name: "buildNFR"
+        params: []
+        body: |
+          addPrefix("NFR-");
+          $Prototype = "pNFR";
+          logMessage("Creating non-functional requirement: " + $Name + " Set prototype to: " + $Prototype);
+          $Text = "Non-Functional Requirement:\n\nMeasurement Criteria:\n- \n\nPriority: ";
+
+  - name: "TemplateBuilder"
+    path: "/Hints/Library/TemplateBuilder"
+    badge: "code"
+    searchable: false
+    smartQuotes: false
+    functions:
+      - name: "createPreviewTemplate"
+        params: []
+        body: |
+          create("/Templates/Preview Folder");
+          $Text("/Templates/Preview Folder") = "!3 ^value($Name)^\n\n^children()^\n";
+          $Badge("/Templates/Preview Folder") = "display-chart";
+          
+      - name: "createStoryTemplate"
+        params: []
+        body: |
+          create("/Templates/Preview Story");
+          $Text("/Templates/Preview Story") = "!4 ^value($Name)^\n\nAs ^value($StoryRole)^\nI want to ^value($StoryWant)^\nSo that ^value($StoryReason)^\n";
+          $Badge("/Templates/Preview Story") = "display-chart";

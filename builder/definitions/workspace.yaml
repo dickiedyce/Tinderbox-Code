@@ -1,0 +1,51 @@
+# Main workspace structure definition
+workspace:
+  name: "Complete Tinderbox Workspace"
+  description: "Production-ready workspace with project management automation"
+  
+  log:
+    path: "/Log"
+    badge: "edit"
+    font: "Courier New"
+    font_size: 11
+    
+  folders:
+    - path: "/Hints"
+      badge: "folder2"
+      
+    - path: "/Hints/Library"
+      badge: "books"
+      onAdd: '$Badge = "code"; $Searchable = false; $SmartQuotes = false;'
+      
+    - path: "/Hints/Preview"
+      badge: "display-chart"
+      
+    - path: "/Projects"
+      badge: "folder2"
+      prototype: "pFolder"
+      onAdd: "buildProject();"
+      
+    - path: "/Resources"
+      badge: "folder2"
+      prototype: "pFolder"
+      
+    - path: "/Templates"
+      badge: "display-chart"
+      
+    - path: "/Prototypes"
+      badge: "file-cabinet"
+      onAdd: "$IsPrototype = true;"
+
+  # Custom attributes to create
+  attributes:
+    - name: "StoryRole"
+      type: "string"
+      default: "user role"
+      
+    - name: "StoryWant" 
+      type: "string"
+      default: "describe what they want"
+      
+    - name: "StoryReason"
+      type: "string"
+      default: "explain the value"

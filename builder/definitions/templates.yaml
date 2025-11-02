@@ -1,0 +1,27 @@
+# HTML Export Templates
+templates:
+  - name: "Preview Folder"
+    path: "/Templates/Preview Folder"
+    badge: "display-chart"
+    content: |
+      !3 ^value($Name)^
+      
+      ^children()^
+      
+  - name: "Preview Story"  
+    path: "/Templates/Preview Story"
+    badge: "display-chart"
+    content: |
+      !4 ^value($Name)^
+      
+      As ^value($StoryRole)^
+      I want to ^value($StoryWant)^
+      So that ^value($StoryReason)^
+      
+  - name: "Preview Leaf"
+    path: "/Templates/Preview Leaf"
+    badge: "display-chart"
+    content: |
+      !4 ^value($Name)^
+      
+      ^value($Text)^
