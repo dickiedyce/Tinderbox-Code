@@ -1,0 +1,97 @@
+// Tinderbox Workspace Installer - Edict Module
+// Copies modular functions to /Hints/Library/ for global access
+
+// Simple logging function (standalone - no dependencies)
+function simpleLog(message) {
+    if(!exists("/Log")) {
+        create("/Log");
+        $Badge("/Log") = "edit";
+        $TextFont("/Log") = "Courier New";
+        $TextFontSize("/Log") = 11;
+        $Text("/Log") = "=== Tinderbox Installation Log ===\n";
+    }
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+
+// Function to copy a library module to Hints/Library
+function copyModuleToLibrary(moduleName, sourceNoteName) {
+    var(targetPath, sourceText){
+        targetPath = "/Hints/Library/" + moduleName;
+        
+        simpleLog("Attempting to copy: " + sourceNoteName + " -> " + targetPath);
+        
+        if(exists(sourceNoteName)) {
+            sourceText = $Text(sourceNoteName);
+            
+            if(sourceText != "") {
+                create("/Hints/Library", moduleName);
+                $Text(targetPath) = sourceText;
+                $Badge(targetPath) = "code";
+                $Searchable(targetPath) = false;
+                
+                simpleLog("SUCCESS: Copied " + moduleName + " (" + sourceText.size() + " chars)");
+            } else {
+                simpleLog("ERROR: " + sourceNoteName + " exists but has no content");
+            }
+        } else {
+            simpleLog("ERROR: Source note not found: " + sourceNoteName);
+        }
+    }
+}
+
+// Function to install all workspace modules
+function installWorkspaceModules() {
+    // Ensure /Hints/Library exists
+    if(!exists("/Hints")) {
+        create("/Hints");
+        $Badge("/Hints") = "folder2";
+    }
+    
+    if(!exists("/Hints/Library")) {
+        create("/Hints/Library");
+        $Badge("/Hints/Library") = "books";
+    }
+    
+    // Ensure /Installer folder exists
+    if(!exists("/Installer")) {
+        create("/Installer");
+        $Badge("/Installer") = "file-cabinet";
+        simpleLog("Created /Installer folder - please add source modules here");
+        return;
+    }
+    
+    simpleLog("Found /Installer folder, copying modules...");
+    
+    // Debug: List what's in the /Installer folder
+    simpleLog("Contents of /Installer: " + collect(children("/Installer"), $Name).format("; "));
+    
+    // Copy all modules to library from /Installer folder
+    copyModuleToLibrary("CoreUtils", "/Installer/Core Utilities");
+    copyModuleToLibrary("AttributesManager", "/Installer/Attributes Manager");
+    copyModuleToLibrary("PrototypeBuilder", "/Installer/Prototype Builder");
+    copyModuleToLibrary("TemplateBuilder", "/Installer/Template Builder");
+    copyModuleToLibrary("ProjectStructure", "/Installer/Project Structure");
+    copyModuleToLibrary("WorkspaceInitializer", "/Installer/Workspace Initializer");
+}
+
+// Main initialization function with modular approach
+function safeInitialize() {
+    simpleLog("=== STARTING INSTALLATION ===");
+    simpleLog("Checking /Installer folder...");
+    
+    // Install all modules to library first
+    installWorkspaceModules();
+    
+    // Only run workspace initialization if modules were copied successfully
+    if(exists("/Hints/Library/WorkspaceInitializer")) {
+        simpleLog("Running workspace initialization...");
+        initializeWorkspace();
+        simpleLog("Installation completed at " + format(date("today"),"D b Y"));
+    } else {
+        simpleLog("ERROR: WorkspaceInitializer not found in library - skipping initialization");
+        simpleLog("Please ensure all source modules are in /Installer folder");
+    }
+}
+
+// Execute the safe initialization
+safeInitialize();

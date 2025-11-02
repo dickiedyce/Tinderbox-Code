@@ -1,0 +1,138 @@
+// Prototype Builder for Tinderbox Workspace
+// Functions for creating and configuring note prototypes
+
+// Function: createPrototypesContainer
+// Purpose: Create the main /Prototypes folder with proper configuration
+function createPrototypesContainer() {
+   logMessage("Creating /Prototypes folder...");
+   
+   create("/Prototypes");
+   $Badge("/Prototypes") = "file-cabinet";
+   $OnAdd("/Prototypes") = '$IsPrototype=true;$DisplayedAttributes="OnAdd;Badge;HTMLExportTemplate"';
+   $DisplayedAttributes("/Prototypes") = "OnAdd";
+   
+   logMessage("/Prototypes folder created");
+}
+
+// Function: createActionPrototype
+// Purpose: Create prototype for action notes
+function createActionPrototype() {
+   create("/Prototypes","Action");
+   $Badge("/Prototypes/Action") = "crosshair";
+   $Color("/Prototypes/Action") = "lighter black";
+   $IsAction("/Prototypes/Action") = true;
+   $SmartQuotes("/Prototypes/Action") = false;
+   $DisplayedAttributes("/Prototypes/Action") = "OnAdd";
+}
+
+// Function: createFolderPrototype  
+// Purpose: Create prototype for folder notes
+function createFolderPrototype() {
+   create("/Prototypes","pFolder");
+   $Badge("/Prototypes/pFolder") = "folder2";
+   $Color("/Prototypes/pFolder") = "lighter black";
+   $IsPrototype("/Prototypes/pFolder") = true;
+   $SmartQuotes("/Prototypes/pFolder") = false;
+   $DisplayedAttributes("/Prototypes/pFolder") = getAttributeListForPrototype("folder");
+   $HTMLExportTemplate("/Prototypes/pFolder") = "/Templates/Preview Folder";
+}
+
+// Function: createHTMLPrototype
+// Purpose: Create prototype for HTML notes
+function createHTMLPrototype() {
+   create("/Prototypes","HTML");
+   $Badge("/Prototypes/HTML") = "globe";
+   $Color("/Prototypes/HTML") = "lighter black";
+   $IsPrototype("/Prototypes/HTML") = true;
+   $SmartQuotes("/Prototypes/HTML") = false;
+   $DisplayedAttributes("/Prototypes/HTML") = getAttributeListForPrototype("folder");
+}
+
+// Function: createResourcePrototype
+// Purpose: Create prototype for resource notes
+function createResourcePrototype() {
+   create("/Prototypes","pResource");
+   $Badge("/Prototypes/pResource") = "folder2";
+   $IsPrototype("/Prototypes/pResource") = true;
+   $DisplayedAttributes("/Prototypes/pResource") = getAttributeListForPrototype("folder");
+}
+
+// Function: createRolePrototype
+// Purpose: Create prototype for role notes
+function createRolePrototype() {
+   create("/Prototypes","pRole");
+   $Badge("/Prototypes/pRole") = "users";
+   $IsPrototype("/Prototypes/pRole") = true;
+   $DisplayedAttributes("/Prototypes/pRole") = getAttributeListForPrototype("folder");
+   $HTMLExportTemplate("/Prototypes/pRole") = "/Templates/Preview Leaf";
+}
+
+// Function: createStoryPrototype
+// Purpose: Create prototype for user story notes
+function createStoryPrototype() {
+   create("/Prototypes","pStory");
+   $Badge("/Prototypes/pStory") = "chat-ellipsis";
+   $IsPrototype("/Prototypes/pStory") = true;
+   $DisplayedAttributes("/Prototypes/pStory") = getAttributeListForPrototype("story");
+   $HTMLExportTemplate("/Prototypes/pStory") = "/Templates/Preview Story";
+}
+
+// Function: createProjectPrototype
+// Purpose: Create prototype for project notes
+function createProjectPrototype() {
+   create("/Prototypes","pProject");
+   $Badge("/Prototypes/pProject") = "address-book";
+   $IsPrototype("/Prototypes/pProject") = true;
+   $DisplayedAttributes("/Prototypes/pProject") = getAttributeListForPrototype("project");
+   $HTMLExportTemplate("/Prototypes/pProject") = "/Templates/Preview Folder";
+}
+
+// Function: createFRPrototype
+// Purpose: Create prototype for functional requirement notes
+function createFRPrototype() {
+   create("/Prototypes","pFR");
+   $Badge("/Prototypes/pFR") = "calculator-large";
+   $IsPrototype("/Prototypes/pFR") = true;
+   $DisplayedAttributes("/Prototypes/pFR") = getAttributeListForPrototype("folder");
+}
+
+// Function: instantiateAllPrototypes
+// Purpose: Create all prototypes in the correct order
+function instantiateAllPrototypes() {
+   logMessage("Creating all prototypes...");
+   
+   createPrototypesContainer();
+   createActionPrototype();
+   createFolderPrototype();
+   createHTMLPrototype();
+   createResourcePrototype();
+   createRolePrototype();
+   createStoryPrototype();
+   createProjectPrototype();
+   createFRPrototype();
+   
+   logMessage("All prototypes created successfully");
+}
+
+// Function: validatePrototypes
+// Purpose: Verify all prototypes were created correctly
+function validatePrototypes() {
+   var(requiredPrototypes, missingPrototypes){
+      requiredPrototypes = "Action;pFolder;HTML;pResource;pRole;pStory;pProject;pFR";
+      missingPrototypes = "";
+      
+      requiredPrototypes.split(";").each(prototype){
+         if(!exists("/Prototypes/" + prototype)){
+            missingPrototypes = missingPrototypes + prototype + ";";
+         }
+      }
+      
+      if(missingPrototypes != "") {
+         logMessage("WARNING: Missing prototypes: " + missingPrototypes);
+         return false;
+      } else {
+         logMessage("All prototypes validated successfully");
+         return true;
+      }
+   }
+}

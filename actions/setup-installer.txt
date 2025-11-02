@@ -1,0 +1,376 @@
+// Setup Installer - Creates all source modules in /Installer folder
+// Run this action ONCE to populate the installer with all modules
+
+function setupInstallerModules() {
+    // Create /Installer folder if it doesn't exist
+    if(!exists("/Installer")) {
+        create("/Installer");
+        $Badge("/Installer") = "file-cabinet";
+    }
+    
+    // Create Core Utilities module
+    create("/Installer", "Core Utilities");
+    $Text("/Installer/Core Utilities") = 
+'// Core Utilities for Tinderbox Workspace
+// Functions for logging, validation, and basic operations
+
+// Function: logMessage
+// Purpose: Centralized logging to /Log note with timestamp
+function logMessage(message) {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $Text("/Log") = "";
+   }
+   $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+
+// Function: setupContainer
+// Purpose: Create container with badge and optional additional setup
+function setupContainer(vPath, vBadge, vAdditionalSetup) {
+    create(vPath);
+    $Badge(vPath) = vBadge;
+    if(vAdditionalSetup != "") {
+        eval(vAdditionalSetup);
+    }
+}
+
+// Function: addPrefix
+// Purpose: Ensures that the note name starts with the specified prefix
+function addPrefix(prefix){
+   if ($Name.substr(0, prefix.size()) != prefix) { 
+      $Name = prefix + $Name;
+   }
+}
+
+// Function: childFolder
+// Purpose: Creates a new child folder under the given root with combined name
+function childFolder(vRoot, vFolderName) {
+   var(vName, vFolder){
+      vName = $Name(vRoot);
+      vFolder = create(vRoot, vName + " " + vFolderName);
+      $Prototype(vFolder) = "pFolder";
+      $Badge(vFolder) = "folder2";
+   }
+   return vFolder;
+}
+
+// Function: ensureLogExists
+// Purpose: Creates log note if it does not exist with proper formatting
+function ensureLogExists() {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $TextFont("/Log") = "Courier New";
+      $TextFontSize("/Log") = 11;
+      $Text("/Log") = "=== Tinderbox Workspace Log ===\n";
+   }
+}
+
+// Function: validatePrerequisites
+// Purpose: Check if workspace is ready for initialization
+function validatePrerequisites() {
+   var(isValid){
+      isValid = true;
+      
+      if($Name == "untitled") {
+         logMessage("ERROR: Cannot initialize untitled document");
+         isValid = false;
+      }
+      
+      if($IsProcessing == true) {
+         logMessage("WARNING: Processing already in progress");
+         isValid = false;
+      }
+   }
+   return isValid;
+}
+
+// Function: setSiblingOrder
+// Purpose: Set ordering for main workspace containers
+function setSiblingOrder() {
+   var(vRootCount, vContainers, vIndex){
+      vRootCount = $ChildCount(parent);
+      vContainers = "/Hints;/Prototypes;/Templates;/Projects;/Resources";
+      vIndex = 0;
+      
+      vContainers.split(";").each(vContainer){
+         if(exists(vContainer)) {
+            $SiblingOrder(vContainer) = vRootCount - vIndex;
+            vIndex = vIndex + 1;
+         }
+      }
+   }
+}
+
+// Function: createHintsStructure
+// Purpose: Creates the /Hints hierarchy for function libraries
+function createHintsStructure() {
+   logMessage("Creating /Hints structure...");
+   
+   setupContainer("/Hints", "folder2", "");
+   setupContainer("/Hints/Library", "books", "");
+   setupContainer("/Hints/Preview", "display-chart", "");
+   
+   logMessage("Hints structure created successfully");
+}
+
+// Function: getPreviewStyles
+// Purpose: Generate common CSS styles for HTML templates
+function getPreviewStyles() {
+    return "body{" +
+        "font-family: \"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;" +
+        "margin-left: 7.5%;" +
+        "margin-right: 7.5%;" +
+        "line-height: 1.4;" +
+        "}" +
+        "table {" +
+        "margin: 2em 0;" +
+        "font-size: 0.9em;" +
+        "border: 1px solid #888888;" +
+        "}" +
+        "td{" +
+        "padding: 0.5em;" +
+        "}" +
+        "img{" +
+        "width: 100%;" +
+        "}";
+}
+
+// Function: createStyleNote
+// Purpose: Create CSS style note in Hints/Preview
+function createStyleNote() {
+   create("/Hints/Preview","style");
+   $Text("/Hints/Preview/style") = getPreviewStyles();
+   $Searchable("/Hints/Preview/style") = false;
+}';
+
+    // Create Workspace Initializer module
+    create("/Installer", "Workspace Initializer");
+    $Text("/Installer/Workspace Initializer") = 
+'// Workspace Initializer - Main orchestration module
+// Coordinates all workspace setup modules in the correct order
+
+// Function: initializeWorkspace
+// Purpose: Master initialization function that orchestrates all modules
+function initializeWorkspace() {
+   // Ensure prerequisites
+   ensureLogExists();
+   logMessage("Starting workspace initialization");
+   
+   if(!validatePrerequisites()) {
+      logMessage("ERROR: Prerequisites not met - aborting initialization");
+      return false;
+   }
+   
+   // Set processing flag
+   $IsProcessing = true;
+   
+   var(success){
+      success = true;
+      
+      // Step 1: Create core infrastructure
+      logMessage("Phase 1: Creating core infrastructure...");
+      createHintsStructure();
+      createStyleNote();
+      
+      // Step 2: Create project containers (simplified)
+      logMessage("Phase 2: Creating project containers...");
+      if(!exists("/Projects")) {
+         create("/Projects");
+         $Badge("/Projects") = "folder2";
+         logMessage("Created /Projects folder");
+      }
+      
+      if(!exists("/Resources")) {
+         create("/Resources");
+         $Badge("/Resources") = "folder2";
+         logMessage("Created /Resources folder");
+      }
+      
+      // Step 3: Organize container order
+      logMessage("Phase 3: Organizing workspace structure...");
+      setSiblingOrder();
+   }
+   
+   // Reset processing flag
+   $IsProcessing = false;
+   
+   // Final summary
+   if(success) {
+      logMessage("Workspace initialization completed successfully");
+      logMessage("=== WORKSPACE SUMMARY ===");
+      logMessage("Hints structure: " + (exists("/Hints") ? "✓" : "✗"));
+      logMessage("Projects folder: " + (exists("/Projects") ? "✓" : "✗"));
+      logMessage("Resources folder: " + (exists("/Resources") ? "✓" : "✗"));
+   } else {
+      logMessage("WARNING: Workspace initialization completed with errors");
+   }
+   
+   return success;
+}';
+
+    // Create the installer trigger note with embedded code
+    create("/Installer", "Main Installer");
+    
+    // Set the edict code directly
+    $Edict("/Installer/Main Installer") = 
+'// Simple logging function (standalone - no dependencies)
+function simpleLog(message) {
+    if(!exists("/Log")) {
+        create("/Log");
+        $Badge("/Log") = "edit";
+        $TextFont("/Log") = "Courier New";
+        $TextFontSize("/Log") = 11;
+        $Text("/Log") = "=== Tinderbox Installation Log ===\n";
+    }
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+
+// Function to copy a library module to Hints/Library
+function copyModuleToLibrary(moduleName, sourceNoteName) {
+    var(targetPath, sourceText){
+        targetPath = "/Hints/Library/" + moduleName;
+        
+        simpleLog("Attempting to copy: " + sourceNoteName + " -> " + targetPath);
+        simpleLog("  Source exists: " + exists(sourceNoteName));
+        
+        if(exists(sourceNoteName)) {
+            sourceText = $Text(sourceNoteName);
+            simpleLog("  Source text length: " + sourceText.size());
+            
+            if(sourceText != "") {
+                simpleLog("  Creating library note: " + moduleName);
+                create("/Hints/Library", moduleName);
+                $Text(targetPath) = sourceText;
+                $Badge(targetPath) = "code";
+                $Searchable(targetPath) = false;
+                
+                simpleLog("  Verifying copy - target exists: " + exists(targetPath));
+                simpleLog("  Target text length: " + $Text(targetPath).size());
+                simpleLog("SUCCESS: Copied " + moduleName + " (" + sourceText.size() + " chars)");
+            } else {
+                simpleLog("ERROR: " + sourceNoteName + " exists but has no content");
+            }
+        } else {
+            simpleLog("ERROR: Source note not found: " + sourceNoteName);
+        }
+    }
+}
+
+// Function to install all workspace modules
+function installWorkspaceModules() {
+    // Ensure /Hints/Library exists
+    if(!exists("/Hints")) {
+        create("/Hints");
+        $Badge("/Hints") = "folder2";
+    }
+    
+    if(!exists("/Hints/Library")) {
+        create("/Hints/Library");
+        $Badge("/Hints/Library") = "books";
+    }
+    
+    simpleLog("Found /Installer folder, copying modules...");
+    
+    // Debug: List what is in the /Installer folder
+    simpleLog("Contents of /Installer: " + collect(children("/Installer"), $Name).format("; "));
+    
+    // Copy modules to library from /Installer folder
+    copyModuleToLibrary("CoreUtils", "/Installer/Core Utilities");
+    copyModuleToLibrary("WorkspaceInitializer", "/Installer/Workspace Initializer");
+}
+
+// Main initialization function
+function safeInitialize() {
+    simpleLog("=== STARTING INSTALLATION ===");
+    
+    // Install all modules to library first
+    installWorkspaceModules();
+    
+    // Check if modules were copied successfully
+    simpleLog("Checking copy results:");
+    simpleLog("  /Hints/Library/CoreUtils exists: " + exists("/Hints/Library/CoreUtils"));
+    simpleLog("  /Hints/Library/WorkspaceInitializer exists: " + exists("/Hints/Library/WorkspaceInitializer"));
+    
+    // Run workspace initialization directly (embedded)
+    if(exists("/Hints/Library/CoreUtils")) {
+        simpleLog("SUCCESS: CoreUtils found in library - proceeding with initialization");
+        
+        // Create core infrastructure
+        simpleLog("Phase 1: Creating core infrastructure...");
+        if(!exists("/Hints")) {
+            create("/Hints");
+            $Badge("/Hints") = "folder2";
+        }
+        if(!exists("/Hints/Library")) {
+            create("/Hints/Library");
+            $Badge("/Hints/Library") = "books";
+        }
+        if(!exists("/Hints/Preview")) {
+            create("/Hints/Preview");
+            $Badge("/Hints/Preview") = "display-chart";
+        }
+        
+        // Create CSS style note
+        if(!exists("/Hints/Preview/style")) {
+            create("/Hints/Preview", "style");
+            $Text("/Hints/Preview/style") = "body{font-family:\"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;margin-left:7.5%;margin-right:7.5%;line-height:1.4;}table{margin:2em 0;font-size:0.9em;border:1px solid #888888;}td{padding:0.5em;}img{width:100%;}";
+            $Searchable("/Hints/Preview/style") = false;
+        }
+        
+        // Create project containers
+        simpleLog("Phase 2: Creating project containers...");
+        if(!exists("/Projects")) {
+            create("/Projects");
+            $Badge("/Projects") = "folder2";
+            simpleLog("Created /Projects folder");
+        }
+        
+        if(!exists("/Resources")) {
+            create("/Resources");
+            $Badge("/Resources") = "folder2";
+            simpleLog("Created /Resources folder");
+        }
+        
+        // Final summary
+        simpleLog("=== WORKSPACE SUMMARY ===");
+        simpleLog("Hints structure: " + (exists("/Hints") ? "✓" : "✗"));
+        simpleLog("Style note: " + (exists("/Hints/Preview/style") ? "✓" : "✗"));
+        simpleLog("Projects folder: " + (exists("/Projects") ? "✓" : "✗"));
+        simpleLog("Resources folder: " + (exists("/Resources") ? "✓" : "✗"));
+        simpleLog("Library modules: " + $ChildCount("/Hints/Library"));
+        
+        simpleLog("Installation completed successfully at " + format(date("today"),"D b Y"));
+    } else {
+        simpleLog("ERROR: CoreUtils not found in library - installation failed");
+    }
+}
+
+// Execute the safe initialization
+safeInitialize();';
+
+    // Set the rule code
+    $Rule("/Installer/Main Installer") = 
+'if($RuleDisabled==false){
+   $EdictDisabled=false;
+   update(this);
+   $EdictDisabled=true;
+   $RuleDisabled=true;
+};';
+    
+    $RuleDisabled("/Installer/Main Installer") = true;
+    $EdictDisabled("/Installer/Main Installer") = true;
+    $DisplayedAttributes("/Installer/Main Installer") = "EdictDisabled;RuleDisabled;DisplayedAttributes";
+    
+    // Success message
+    if(!exists("/Log")) {
+        create("/Log");
+        $Badge("/Log") = "edit";
+    }
+    $Text("/Log") = $Text("/Log") + "SETUP COMPLETE: All installer modules created in /Installer folder\n";
+    $Text("/Log") = $Text("/Log") + "NEXT STEP: Set $RuleDisabled=false on /Installer/Main Installer to activate\n";
+}
+
+// Run the setup
+setupInstallerModules();

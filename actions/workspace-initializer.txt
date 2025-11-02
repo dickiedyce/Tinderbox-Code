@@ -1,0 +1,208 @@
+// Workspace Initializer - Main orchestration module
+// Coordinates all workspace setup modules in the correct order
+
+// Function: initializeWorkspace
+// Purpose: Master initialization function that orchestrates all modules
+function initializeWorkspace() {
+   // Ensure prerequisites
+   ensureLogExists();
+   logMessage("Starting workspace initialization");
+   
+   if(!validatePrerequisites()) {
+      logMessage("ERROR: Prerequisites not met - aborting initialization");
+      return false;
+   }
+   
+   // Set processing flag
+   $IsProcessing = true;
+   
+   var(success){
+      success = true;
+      
+      // Step 1: Create core infrastructure
+      logMessage("Phase 1: Creating core infrastructure...");
+      createHintsStructure();
+      createStyleNote();
+      
+      // Step 2: Create and configure attributes
+      logMessage("Phase 2: Setting up attributes...");
+      createCustomAttributes();
+      setupAttributeSuggestions();
+      if(!validateAttributeCreation()) {
+         success = false;
+      }
+      
+      // Step 3: Create templates
+      logMessage("Phase 3: Creating templates...");
+      instantiateAllTemplates();
+      if(!validateTemplates()) {
+         success = false;
+      }
+      
+      // Step 4: Create prototypes
+      logMessage("Phase 4: Creating prototypes...");
+      instantiateAllPrototypes();
+      if(!validatePrototypes()) {
+         success = false;
+      }
+      
+      // Step 5: Update template references in prototypes
+      logMessage("Phase 5: Linking templates to prototypes...");
+      updateTemplateReferences();
+      
+      // Step 6: Create project containers
+      logMessage("Phase 6: Creating project containers...");
+      instantiateProjectContainers();
+      
+      // Step 7: Organize container order
+      logMessage("Phase 7: Organizing workspace structure...");
+      setSiblingOrder();
+   }
+   
+   // Reset processing flag
+   $IsProcessing = false;
+   
+   // Final validation and summary
+   if(success) {
+      logMessage("Workspace initialization completed successfully");
+      logWorkspaceSummary();
+   } else {
+      logMessage("WARNING: Workspace initialization completed with errors - check log for details");
+   }
+   
+   return success;
+}
+
+// Function: logWorkspaceSummary
+// Purpose: Log a summary of what was created
+function logWorkspaceSummary() {
+   logMessage("=== WORKSPACE SUMMARY ===");
+   logMessage("Hints structure: " + (exists("/Hints") ? "✓" : "✗"));
+   logMessage("Style note: " + (exists("/Hints/Preview/style") ? "✓" : "✗"));
+   logMessage("Prototypes folder: " + (exists("/Prototypes") ? "✓" : "✗"));
+   logMessage("Templates folder: " + (exists("/Templates") ? "✓" : "✗"));
+   logMessage("Projects folder: " + (exists("/Projects") ? "✓" : "✗"));
+   logMessage("Resources folder: " + (exists("/Resources") ? "✓" : "✗"));
+   
+   // Count created items
+   var(prototypeCount, templateCount){
+      prototypeCount = $ChildCount("/Prototypes");
+      templateCount = $ChildCount("/Templates");
+      
+      logMessage("Created " + prototypeCount + " prototypes");
+      logMessage("Created " + templateCount + " templates");
+   }
+   
+   logMessage("=== END SUMMARY ===");
+}
+
+// Function: quickInitialize
+// Purpose: Simplified initialization for basic workspace setup
+function quickInitialize() {
+   ensureLogExists();
+   logMessage("Starting quick workspace setup...");
+   
+   // Create only essential components
+   createHintsStructure();
+   createStyleNote();
+   createProjectsContainer();
+   createResourcesContainer();
+   
+   logMessage("Quick workspace setup completed");
+}
+
+// Function: reinitializeWorkspace
+// Purpose: Safe reinitialization that checks existing structures
+function reinitializeWorkspace() {
+   ensureLogExists();
+   logMessage("Starting workspace re-initialization...");
+   
+   var(existingStructures){
+      existingStructures = "";
+      
+      // Check what already exists
+      if(exists("/Hints")) existingStructures = existingStructures + "Hints;";
+      if(exists("/Prototypes")) existingStructures = existingStructures + "Prototypes;";
+      if(exists("/Templates")) existingStructures = existingStructures + "Templates;";
+      if(exists("/Projects")) existingStructures = existingStructures + "Projects;";
+      if(exists("/Resources")) existingStructures = existingStructures + "Resources;";
+      
+      if(existingStructures != "") {
+         logMessage("Found existing structures: " + existingStructures);
+         logMessage("Re-initialization will skip existing components");
+      }
+   }
+   
+   // Initialize only missing components
+   if(!exists("/Hints")) {
+      createHintsStructure();
+      createStyleNote();
+   }
+   
+   if(!exists("/Templates")) {
+      instantiateAllTemplates();
+   }
+   
+   if(!exists("/Prototypes")) {
+      createCustomAttributes();
+      instantiateAllPrototypes();
+      updateTemplateReferences();
+   }
+   
+   if(!exists("/Projects")) {
+      createProjectsContainer();
+   }
+   
+   if(!exists("/Resources")) {
+      createResourcesContainer();
+   }
+   
+   setSiblingOrder();
+   logMessage("Workspace re-initialization completed");
+}
+
+// Function: validateCompleteWorkspace
+// Purpose: Comprehensive validation of entire workspace
+function validateCompleteWorkspace() {
+   var(errors, warnings){
+      errors = 0;
+      warnings = 0;
+      
+      logMessage("Starting comprehensive workspace validation...");
+      
+      // Check core structure
+      if(!exists("/Hints")) {
+         logMessage("ERROR: /Hints folder missing");
+         errors = errors + 1;
+      }
+      
+      if(!exists("/Hints/Preview/style")) {
+         logMessage("WARNING: CSS style note missing");
+         warnings = warnings + 1;
+      }
+      
+      // Validate prototypes
+      if(!validatePrototypes()) {
+         errors = errors + 1;
+      }
+      
+      // Validate templates  
+      if(!validateTemplates()) {
+         errors = errors + 1;
+      }
+      
+      // Check containers
+      if(!exists("/Projects")) {
+         logMessage("ERROR: /Projects folder missing");
+         errors = errors + 1;
+      }
+      
+      if(!exists("/Resources")) {
+         logMessage("ERROR: /Resources folder missing");
+         errors = errors + 1;
+      }
+   }
+   
+   logMessage("Validation complete: " + errors + " errors, " + warnings + " warnings");
+   return (errors == 0);
+}

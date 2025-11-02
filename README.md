@@ -9,8 +9,9 @@ This workspace provides a structured environment for creating Tinderbox actions,
 ## Directory Structure
 
 - **`/actions/`** - Main action code files
-  - Store your primary Tinderbox action code here
-  - Organize by functionality or use case
+  - **Modular System**: `core-utils.txt`, `attributes-manager.txt`, `prototype-builder.txt`, `template-builder.txt`, `project-structure.txt`, `workspace-initializer.txt`
+  - **Installation**: `installer_init_edict.txt` and `installer_init_rule.txt` for automated setup
+  - Store your primary Tinderbox action code here organized by functionality
 
 - **`/scripts/`** - Automation and utility scripts
   - Helper scripts and automation tools
@@ -97,6 +98,17 @@ The `examples/` directory contains sophisticated action patterns:
 - [Tinderbox Action Code Cookbook](https://www.eastgate.com/Tinderbox/cookbook/) - Official examples (older syntax)
 - [Dot Operators Reference](https://www.eastgate.com/Tinderbox/cookbook/dotOperators.html) - Earlier documentation
 - [Expressions Reference](https://www.eastgate.com/Tinderbox/cookbook/Expressions.html) - Legacy functions guide
+
+## Modular Architecture
+
+This workspace uses a **modular architecture** for complex action code development:
+
+- **Core Modules**: Focused, reusable components for logging, attributes, prototypes, templates, and project structure
+- **Library Pattern**: Functions copied to `/Hints/Library/` for global access across Tinderbox documents  
+- **Installation System**: Automated setup using edict-based copying and workspace initialization
+- **Validation**: Comprehensive testing and error handling throughout all modules
+
+See [`/docs/modular-architecture.md`](docs/modular-architecture.md) for complete architectural documentation.
 
 ---
 

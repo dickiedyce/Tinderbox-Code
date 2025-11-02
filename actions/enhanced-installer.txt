@@ -1,0 +1,143 @@
+// Enhanced Workspace Installer - Run as Rule
+// Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
+
+// Create log if it doesn't exist
+if(!exists("/Log")) {
+    create("/Log");
+    $Badge("/Log") = "edit";
+    $Text("/Log") = "=== Enhanced Installation Log ===\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Starting enhanced installation\n";
+
+// Create basic Hints structure
+if(!exists("/Hints")) {
+    create("/Hints");
+    $Badge("/Hints") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Hints\n";
+}
+
+if(!exists("/Hints/Library")) {
+    create("/Hints/Library");
+    $Badge("/Hints/Library") = "books";
+    $Text("/Log") = $Text("/Log") + "Created /Hints/Library\n";
+}
+
+if(!exists("/Hints/Preview")) {
+    create("/Hints/Preview");
+    $Badge("/Hints/Preview") = "display-chart";
+    $Text("/Log") = $Text("/Log") + "Created /Hints/Preview\n";
+}
+
+// Create CSS style note
+if(!exists("/Hints/Preview/style")) {
+    create("/Hints/Preview", "style");
+    $Text("/Hints/Preview/style") = "body{font-family:\"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;margin-left:7.5%;margin-right:7.5%;line-height:1.4;}table{margin:2em 0;font-size:0.9em;border:1px solid #888888;}td{padding:0.5em;}img{width:100%;}";
+    $Searchable("/Hints/Preview/style") = false;
+    $Text("/Log") = $Text("/Log") + "Created CSS style note\n";
+}
+
+// Create Projects and Resources
+if(!exists("/Projects")) {
+    create("/Projects");
+    $Badge("/Projects") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Projects\n";
+}
+
+if(!exists("/Resources")) {
+    create("/Resources");
+    $Badge("/Resources") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Resources\n";
+}
+
+// Create some sample modules in the library
+$Text("/Log") = $Text("/Log") + "Adding sample modules to library...\n";
+
+// Create a sample Core Utils module
+if(!exists("/Hints/Library/CoreUtils")) {
+    create("/Hints/Library", "CoreUtils");
+    $Text("/Hints/Library/CoreUtils") = 
+'// Core Utilities for Tinderbox Workspace
+function logMessage(message) {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $Text("/Log") = "";
+   }
+   $Text("/Log") = $Text("/Log") + message + "\n";
+}
+
+function setupContainer(vPath, vBadge) {
+    create(vPath);
+    $Badge(vPath) = vBadge;
+}';
+    $Badge("/Hints/Library/CoreUtils") = "code";
+    $Searchable("/Hints/Library/CoreUtils") = false;
+    $Text("/Log") = $Text("/Log") + "Created CoreUtils module\n";
+}
+
+// Create a sample Project Builder module
+if(!exists("/Hints/Library/ProjectBuilder")) {
+    create("/Hints/Library", "ProjectBuilder");
+    $Text("/Hints/Library/ProjectBuilder") = 
+'// Project Builder Functions
+function buildProject() {
+   logMessage("Building project structure for: " + $Name);
+   
+   var(vRoot, vUserStories, vRoles){
+      vRoot = $Path;
+      
+      // Create User Stories folder
+      vUserStories = create(vRoot, $Name + " User Stories");
+      $Badge(vUserStories) = "chat-ellipsis";
+      
+      // Create Roles folder  
+      vRoles = create(vRoot, $Name + " Roles");
+      $Badge(vRoles) = "users";
+   }
+   
+   logMessage("Project structure completed");
+}';
+    $Badge("/Hints/Library/ProjectBuilder") = "code";
+    $Searchable("/Hints/Library/ProjectBuilder") = false;
+    $Text("/Log") = $Text("/Log") + "Created ProjectBuilder module\n";
+}
+
+// Final summary
+$Text("/Log") = $Text("/Log") + "=== INSTALLATION SUMMARY ===\n";
+
+if(exists("/Hints")) {
+    $Text("/Log") = $Text("/Log") + "Hints structure: OK\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "Hints structure: FAILED\n";
+}
+
+if(exists("/Hints/Library")) {
+    $Text("/Log") = $Text("/Log") + "Library folder: OK (" + $ChildCount("/Hints/Library") + " modules)\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "Library folder: FAILED\n";
+}
+
+if(exists("/Hints/Preview/style")) {
+    $Text("/Log") = $Text("/Log") + "Style note: OK\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "Style note: FAILED\n";
+}
+
+if(exists("/Projects")) {
+    $Text("/Log") = $Text("/Log") + "Projects folder: OK\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "Projects folder: FAILED\n";
+}
+
+if(exists("/Resources")) {
+    $Text("/Log") = $Text("/Log") + "Resources folder: OK\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "Resources folder: FAILED\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Enhanced installation completed successfully\n";
+
+// Disable this rule so it only runs once
+$RuleDisabled = true;
+$Text("/Log") = $Text("/Log") + "Rule disabled - installation complete\n";

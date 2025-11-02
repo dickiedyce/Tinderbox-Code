@@ -1,0 +1,147 @@
+// Template Builder for Tinderbox Workspace
+// Functions for creating HTML export templates
+
+// Function: createTemplatesContainer
+// Purpose: Create the main /Templates folder with proper configuration
+function createTemplatesContainer() {
+   logMessage("Creating /Templates folder...");
+   
+   create("/Templates");
+   $Badge("/Templates") = "display-chart";
+   $OnAdd("/Templates") = "buildTemplate()";
+   
+   logMessage("/Templates folder created");
+}
+
+// Function: createPreviewTemplate
+// Purpose: Create base Preview template for HTML export
+function createPreviewTemplate() {
+   create("/Templates/Preview");
+   $IsPrototype("/Templates/Preview") = false;
+   $IsTemplate("/Templates/Preview") = true;
+   $Badge("/Templates/Preview") = "display-chart";
+   $OnAdd("/Templates/Preview") = '$Prototype="HTML";';
+   $SmartQuotes("/Templates/Preview") = false;
+   $Text("/Templates/Preview") = "<html><head><meta charset=\"utf-8\"><title>^title^</title><style>^text(/Hints/Preview/style,plain)</style></head><body>^text</body></html>";
+}
+
+// Function: createPreviewFolderTemplate
+// Purpose: Create template for folder preview pages
+function createPreviewFolderTemplate() {
+   create("/Templates/Preview Folder");
+   $IsPrototype("/Templates/Preview Folder") = false;
+   $IsTemplate("/Templates/Preview Folder") = true;
+   $Badge("/Templates/Preview Folder") = "display-chart";
+   $OnAdd("/Templates/Preview Folder") = '$Prototype="HTML";';
+   $Text("/Templates/Preview Folder") = "!3 ^value($Name)^ \n\n ^children()^ \n";
+}
+
+// Function: createPreviewLeafTemplate
+// Purpose: Create template for leaf note preview pages
+function createPreviewLeafTemplate() {
+   create("/Templates/Preview Leaf");
+   $IsPrototype("/Templates/Preview Leaf") = false;
+   $IsTemplate("/Templates/Preview Leaf") = true;
+   $Badge("/Templates/Preview Leaf") = "display-chart";
+   $OnAdd("/Templates/Preview Leaf") = '$Prototype="HTML";';
+   $Text("/Templates/Preview Leaf") = "!3 ^value($Name)^ \n\n ^value($Text)^ \n";
+}
+
+// Function: createPreviewStoryTemplate
+// Purpose: Create template for user story preview pages
+function createPreviewStoryTemplate() {
+   create("/Templates/Preview Story");
+   $IsPrototype("/Templates/Preview Story") = false;
+   $IsTemplate("/Templates/Preview Story") = true;
+   $Badge("/Templates/Preview Story") = "display-chart";
+   $OnAdd("/Templates/Preview Story") = '$Prototype="HTML";';
+   $SmartQuotes("/Templates/Preview Story") = false;
+   $Text("/Templates/Preview Story") = "!4 ^value($Name)^ \n\n As ^value($StoryRole)^ \n I want to ^value($StoryWant)^ \n So that ^value($StoryReason)^ \n\n [RETINA Story|^value($RetinaURL)^] \n [LEAP Interface file|^value($InterfaceDiagramURL)^] \n";
+}
+
+// Function: buildTemplate
+// Purpose: Action code for building new templates
+function buildTemplate() {
+   $IsPrototype = false;
+   $IsTemplate = true;
+   $Badge = "display-chart";
+   $OnAdd = '$Prototype="HTML";';
+}
+
+// Function: instantiateAllTemplates
+// Purpose: Create all HTML export templates
+function instantiateAllTemplates() {
+   logMessage("Creating all templates...");
+   
+   createTemplatesContainer();
+   createPreviewTemplate();
+   createPreviewFolderTemplate();
+   createPreviewLeafTemplate();
+   createPreviewStoryTemplate();
+   
+   logMessage("All templates created successfully");
+}
+
+// Function: validateTemplates
+// Purpose: Verify all templates were created correctly
+function validateTemplates() {
+   var(requiredTemplates, missingTemplates){
+      requiredTemplates = "Preview;Preview Folder;Preview Leaf;Preview Story";
+      missingTemplates = "";
+      
+      requiredTemplates.split(";").each(template){
+         if(!exists("/Templates/" + template)){
+            missingTemplates = missingTemplates + template + ";";
+         }
+      }
+      
+      if(missingTemplates != "") {
+         logMessage("WARNING: Missing templates: " + missingTemplates);
+         return false;
+      } else {
+         logMessage("All templates validated successfully");
+         return true;
+      }
+   }
+}
+
+// Function: getTemplateForType
+// Purpose: Return appropriate template path for given note type
+function getTemplateForType(noteType) {
+   var(templatePath){
+      if(noteType == "folder") {
+         templatePath = "/Templates/Preview Folder";
+      } else if(noteType == "story") {
+         templatePath = "/Templates/Preview Story";
+      } else if(noteType == "leaf") {
+         templatePath = "/Templates/Preview Leaf";
+      } else {
+         templatePath = "/Templates/Preview";
+      }
+   }
+   return templatePath;
+}
+
+// Function: updateTemplateReferences
+// Purpose: Update all prototype template references after creation
+function updateTemplateReferences() {
+   logMessage("Updating template references in prototypes...");
+   
+   if(exists("/Prototypes/pFolder")) {
+      $HTMLExportTemplate("/Prototypes/pFolder") = "/Templates/Preview Folder";
+   }
+   
+   if(exists("/Prototypes/pRole")) {
+      $HTMLExportTemplate("/Prototypes/pRole") = "/Templates/Preview Leaf";
+   }
+   
+   if(exists("/Prototypes/pStory")) {
+      $HTMLExportTemplate("/Prototypes/pStory") = "/Templates/Preview Story";
+   }
+   
+   if(exists("/Prototypes/pProject")) {
+      $HTMLExportTemplate("/Prototypes/pProject") = "/Templates/Preview Folder";
+   }
+   
+   logMessage("Template references updated successfully");
+}

@@ -1,0 +1,75 @@
+// Diagnostic Installer - Debug version
+// Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
+
+// Create log if it doesn't exist
+if(!exists("/Log")) {
+    create("/Log");
+    $Badge("/Log") = "edit";
+    $Text("/Log") = "=== Diagnostic Installation Log ===\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Starting diagnostic installation\n";
+
+// Test basic existence checking first
+$Text("/Log") = $Text("/Log") + "Testing basic existence checks...\n";
+$Text("/Log") = $Text("/Log") + "Root children count: " + $ChildCount("/") + "\n";
+$Text("/Log") = $Text("/Log") + "Root children names: " + collect(children("/"), $Name).format("; ") + "\n";
+
+// Create basic Hints structure with debugging
+$Text("/Log") = $Text("/Log") + "Creating /Hints...\n";
+if(!exists("/Hints")) {
+    create("/Hints");
+    $Badge("/Hints") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Hints - immediate check: " + exists("/Hints") + "\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "/Hints already exists\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Creating /Hints/Library...\n";
+if(!exists("/Hints/Library")) {
+    create("/Hints/Library");
+    $Badge("/Hints/Library") = "books";
+    $Text("/Log") = $Text("/Log") + "Created /Hints/Library - immediate check: " + exists("/Hints/Library") + "\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "/Hints/Library already exists\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Creating /Projects...\n";
+if(!exists("/Projects")) {
+    create("/Projects");
+    $Badge("/Projects") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Projects - immediate check: " + exists("/Projects") + "\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "/Projects already exists\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Creating /Resources...\n";
+if(!exists("/Resources")) {
+    create("/Resources");
+    $Badge("/Resources") = "folder2";
+    $Text("/Log") = $Text("/Log") + "Created /Resources - immediate check: " + exists("/Resources") + "\n";
+} else {
+    $Text("/Log") = $Text("/Log") + "/Resources already exists\n";
+}
+
+// Show what actually exists at root level
+$Text("/Log") = $Text("/Log") + "Final root children: " + collect(children("/"), $Name).format("; ") + "\n";
+
+// Test each path specifically
+$Text("/Log") = $Text("/Log") + "=== DETAILED EXISTENCE CHECKS ===\n";
+$Text("/Log") = $Text("/Log") + "exists(\"/Hints\"): " + exists("/Hints") + "\n";
+$Text("/Log") = $Text("/Log") + "exists(\"/Hints/Library\"): " + exists("/Hints/Library") + "\n";
+$Text("/Log") = $Text("/Log") + "exists(\"/Projects\"): " + exists("/Projects") + "\n";
+$Text("/Log") = $Text("/Log") + "exists(\"/Resources\"): " + exists("/Resources") + "\n";
+$Text("/Log") = $Text("/Log") + "exists(\"/Log\"): " + exists("/Log") + "\n";
+
+// Show Hints children if it exists
+if(exists("/Hints")) {
+    $Text("/Log") = $Text("/Log") + "/Hints children: " + collect(children("/Hints"), $Name).format("; ") + "\n";
+}
+
+$Text("/Log") = $Text("/Log") + "Diagnostic complete\n";
+
+// Disable this rule so it only runs once
+$RuleDisabled = true;
+$Text("/Log") = $Text("/Log") + "Rule disabled\n";

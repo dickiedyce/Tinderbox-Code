@@ -1,0 +1,6 @@
+if($RuleDisabled==false){
+   $EdictDisabled=false;
+   update(this);
+   $EdictDisabled=true;
+   $RuleDisabled=true;
+};

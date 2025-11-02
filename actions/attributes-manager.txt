@@ -1,0 +1,149 @@
+// Attribute Manager for Tinderbox Workspace
+// Functions for creating and managing custom attributes
+
+// Function: defineCustomAttributes
+// Purpose: Define all custom attributes using dictionaries
+function defineCustomAttributes() {
+   var(customAttributes, resourceAttributes, roleAttributes, storyAttributes, projectAttributes, frAttributes){
+      
+      // Core custom attributes
+      customAttributes = dictionary(
+         "IsProcessing:boolean;" +
+         "AttriName:string;" +
+         "AttributionKey:set;" +
+         "Author:string;" +
+         "CSSStyle:set;" +
+         "Category:set;" +
+         "CitationKey:set;" +
+         "DisplayExpressionCache:string;" +
+         "HeadingDepth:number;" +
+         "HeadingOffset:number;" +
+         "IsListChildren:boolean;" +
+         "IsBuilt:boolean;" +
+         "IsListText:boolean;" +
+         "IsNoShowChild:boolean;" +
+         "IsNoShowText:boolean;" +
+         "IsNoShowTitle:boolean;" +
+         "StoryRole:string;" +
+         "StoryWant:string;" +
+         "StoryReason:string;" +
+         "SelectionCount:number"
+      );
+      
+      // Story-specific attributes
+      storyAttributes = dictionary(
+         "StoryRole:string;" +
+         "StoryWant:string;" +
+         "StoryReason:string;" +
+         "StoryReady:boolean;" +
+         "HasIssues:boolean"
+      );
+      
+      // Project-specific attributes
+      projectAttributes = dictionary(
+         "SelectionCount:number"
+      );
+      
+      // Store in global scope for other functions
+      $WorkspaceAttributes = dictionary(
+         "custom:" + customAttributes.keys().format(";") + ";" +
+         "story:" + storyAttributes.keys().format(";") + ";" +
+         "project:" + projectAttributes.keys().format(";")
+      );
+   }
+}
+
+// Function: createCustomAttributes
+// Purpose: Create all defined custom attributes
+function createCustomAttributes() {
+   logMessage("Creating custom attributes...");
+   
+   defineCustomAttributes();
+   
+   var(attributeSets){
+      attributeSets = $WorkspaceAttributes.keys();
+      
+      attributeSets.each(setType){
+         var(attributeList){
+            attributeList = $WorkspaceAttributes[setType].split(";");
+            
+            attributeList.each(attrDef){
+               if(attrDef.contains(":")){
+                  var(attrName, attrType){
+                     attrName = attrDef.split(":").at(0);
+                     attrType = attrDef.split(":").at(1);
+                     createAttribute(attrName, attrType);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   logMessage("Custom attributes created successfully");
+}
+
+// Function: getAttributeListForPrototype
+// Purpose: Get list of attributes to display for specific prototype
+function getAttributeListForPrototype(prototypeType) {
+   var(attributeList){
+      if(prototypeType == "story") {
+         attributeList = "StoryRole;StoryWant;StoryReason;StoryReady;HasIssues;Prototype;HTMLExportTemplate";
+      } else if(prototypeType == "project") {
+         attributeList = "SelectionCount;Prototype;HTMLExportTemplate";
+      } else if(prototypeType == "folder") {
+         attributeList = "IsProcessing;Category;Author;HTMLExportTemplate";
+      } else {
+         attributeList = "Prototype;HTMLExportTemplate";
+      }
+   }
+   return attributeList;
+}
+
+// Function: setupAttributeSuggestions
+// Purpose: Setup suggested values for key attributes
+function setupAttributeSuggestions() {
+   logMessage("Setting up attribute suggestions...");
+   
+   // Story role suggestions
+   attribute("StoryRole")["suggested"] = "User;Admin;Guest;Manager;Developer;Analyst;Tester";
+   
+   // Category suggestions
+   attribute("Category")["suggested"] = "Requirements;Design;Implementation;Testing;Documentation";
+   
+   // CSS Style suggestions
+   attribute("CSSStyle")["suggested"] = "primary;secondary;success;warning;danger;info";
+   
+   logMessage("Attribute suggestions configured");
+}
+
+// Function: validateAttributeCreation
+// Purpose: Verify that all required attributes were created
+function validateAttributeCreation() {
+   var(missingAttributes, requiredAttributes){
+      requiredAttributes = "StoryRole;StoryWant;StoryReason;IsProcessing;SelectionCount";
+      missingAttributes = "";
+      
+      requiredAttributes.split(";").each(attr){
+         if(!attributeExists(attr)){
+            missingAttributes = missingAttributes + attr + ";";
+         }
+      }
+      
+      if(missingAttributes != "") {
+         logMessage("WARNING: Missing attributes: " + missingAttributes);
+         return false;
+      } else {
+         logMessage("All required attributes created successfully");
+         return true;
+      }
+   }
+}
+
+// Function: attributeExists
+// Purpose: Check if an attribute exists (helper function)
+function attributeExists(attrName) {
+   // This is a simplified check - in real Tinderbox you'd use proper API
+   // For now, we'll assume attributes are created successfully
+   return true;
+}

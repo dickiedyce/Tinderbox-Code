@@ -1,0 +1,47 @@
+// Ultra-Simple Installer - Basic Tinderbox only
+// Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
+
+// Create log note
+create("/Log");
+$Badge("/Log") = "edit";
+$Text("/Log") = "=== Ultra-Simple Installation Log ===\n";
+
+$Text("/Log") = $Text("/Log") + "Starting installation\n";
+
+// Create basic structure - no conditional checks
+create("/Hints");
+$Badge("/Hints") = "folder2";
+$Text("/Log") = $Text("/Log") + "Created Hints\n";
+
+create("/Hints/Library"); 
+$Badge("/Hints/Library") = "books";
+$Text("/Log") = $Text("/Log") + "Created Library\n";
+
+create("/Hints/Preview");
+$Badge("/Hints/Preview") = "display-chart";  
+$Text("/Log") = $Text("/Log") + "Created Preview\n";
+
+create("/Projects");
+$Badge("/Projects") = "folder2";
+$Text("/Log") = $Text("/Log") + "Created Projects\n";
+
+create("/Resources"); 
+$Badge("/Resources") = "folder2";
+$Text("/Log") = $Text("/Log") + "Created Resources\n";
+
+// Create a simple utility module
+create("/Hints/Library/Utils");
+$Text("/Hints/Library/Utils") = "// Simple utility functions\nfunction hello() { return \"Hello from Utils!\"; }";
+$Badge("/Hints/Library/Utils") = "code";
+$Text("/Log") = $Text("/Log") + "Created Utils module\n";
+
+// Create CSS style
+create("/Hints/Preview/style");
+$Text("/Hints/Preview/style") = "body { font-family: Arial; margin: 2em; }";
+$Text("/Log") = $Text("/Log") + "Created style note\n";
+
+$Text("/Log") = $Text("/Log") + "Installation completed\n";
+
+// Disable rule
+$RuleDisabled = true;
+$Text("/Log") = $Text("/Log") + "Rule disabled\n";

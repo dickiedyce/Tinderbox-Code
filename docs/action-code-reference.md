@@ -268,3 +268,107 @@ $Date.day = 25;
 $FormattedDate = $Date.format("l");  // Short format
 $CustomFormat = format($Date, "D M Y"); // Custom format
 ```
+
+## Special Note Locations
+
+ ```/Hints/Library/``` is effectively the equivalent to a `UNIX $PATH` location. Functions included in the $TEXT of notes in this location are available in global scope to other notes Rules, Actions, or Edicts code.
+
+ ## Use of Notes & Prototypal Inheritance
+
+ Prefer inheritance and note-based organization over large monolithic action code blocks. This enhances reusability, maintainability, and clarity of your Tinderbox action code.
+ It is often better to create dedicated notes for specific functions or logic, and then reference these notes in your action code. This modular approach allows for easier updates and debugging, as well as promoting code reuse across different parts of your Tinderbox documents.
+ Certain functions and properties are better achieved through prototypal inheritance or note references rather than embedding all logic in a single action code block.
+
+## Modular Development Patterns
+
+### Function Libraries
+Create dedicated notes with reusable functions and copy them to `/Hints/Library/` for global access:
+
+```
+// In a source note
+function myUtilityFunction(param) {
+    // function implementation
+}
+
+// Copy to library
+create("/Hints/Library", "MyModule");
+$Text("/Hints/Library/MyModule") = $Text("Source Note");
+```
+
+### Module Organization
+Break complex functionality into focused modules:
+
+- **Core Utilities**: Logging, validation, basic helpers
+- **Attribute Management**: Custom attribute creation and configuration  
+- **Prototype Builder**: Note prototype definitions
+- **Template Builder**: HTML export templates
+- **Project Structure**: Folder hierarchy creation
+- **Workspace Initializer**: Orchestration and coordination
+
+### Installation Patterns
+Use edict-based installation to copy modules to the library:
+
+```
+// Edict copies source notes to /Hints/Library/
+function copyModuleToLibrary(moduleName, sourceNoteName) {
+    var(targetPath, sourceText){
+        targetPath = "/Hints/Library/" + moduleName;
+        sourceText = $Text(sourceNoteName);
+        
+        create("/Hints/Library", moduleName);
+        $Text(targetPath) = sourceText;
+        $Badge(targetPath) = "code";
+        $Searchable(targetPath) = false;
+    }
+}
+```
+
+### Error Handling and Validation
+Implement comprehensive validation in modular functions:
+
+```
+function validatePrerequisites() {
+   var(isValid){
+      isValid = true;
+      
+      if($Name == "untitled") {
+         logMessage("ERROR: Cannot initialize untitled document");
+         isValid = false;
+      }
+      
+      if($IsProcessing == true) {
+         logMessage("WARNING: Processing already in progress");  
+         isValid = false;
+      }
+   }
+   return isValid;
+}
+```
+
+### Processing Flags
+Use processing flags to prevent recursive execution:
+
+```
+function buildProject() {
+   if ($IsProcessing == true || $Name == "untitled") {
+      return;
+   }
+   
+   $IsProcessing = true;
+   // ... do work ...
+   $IsProcessing = false;
+}
+```
+
+### Centralized Logging
+Implement consistent logging across all modules:
+
+```
+function logMessage(message) {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+   }
+   $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+```

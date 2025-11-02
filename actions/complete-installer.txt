@@ -1,0 +1,210 @@
+// Complete Workspace Installer - Production Ready
+// Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
+
+// Create log note
+create("/Log");
+$Badge("/Log") = "edit";
+$TextFont("/Log") = "Courier New";
+$TextFontSize("/Log") = 11;
+$Text("/Log") = "=== Complete Workspace Installation ===\n";
+
+$Text("/Log") = $Text("/Log") + "Starting complete installation...\n";
+
+// Create basic structure
+create("/Hints");
+$Badge("/Hints") = "folder2";
+create("/Hints/Library"); 
+$Badge("/Hints/Library") = "books";
+$OnAdd("/Hints/Library") = "$Badge = \"code\"; $Searchable = false; $SmartQuotes = false;";
+create("/Hints/Preview");
+$Badge("/Hints/Preview") = "display-chart";  
+create("/Projects");
+$Badge("/Projects") = "folder2";
+$Prototype("/Projects") = "pFolder";
+$OnAdd("/Projects") = "buildProject();";
+create("/Resources"); 
+$Badge("/Resources") = "folder2";
+$Prototype("/Resources") = "pFolder";
+
+$Text("/Log") = $Text("/Log") + "Created basic folder structure\n";
+
+// Create Core Utilities module
+create("/Hints/Library/CoreUtils");
+$Text("/Hints/Library/CoreUtils") = 'function logMessage(message) {
+   $Text("/Log") = $Text("/Log") + message + "\n";
+}
+
+function setupContainer(vPath, vBadge) {
+    create(vPath);
+    $Badge(vPath) = vBadge;
+}
+
+function addPrefix(prefix) {
+   if ($Name.substr(0, prefix.size()) != prefix) { 
+      $Name = prefix + $Name;
+   }
+}
+
+function childFolder(vRoot, vFolderName) {
+   // Simple direct creation without complex variable handling
+   create(vRoot, $Name(vRoot) + " " + vFolderName);
+   $Badge(vRoot + "/" + $Name(vRoot) + " " + vFolderName) = "folder2";
+}';
+$Badge("/Hints/Library/CoreUtils") = "code";
+$Searchable("/Hints/Library/CoreUtils") = false;
+$SmartQuotes("/Hints/Library/CoreUtils") = false;
+
+// Create Project Builder module  
+create("/Hints/Library/ProjectBuilder");
+$Text("/Hints/Library/ProjectBuilder") = 'function buildProject() {
+   logMessage("Building project structure for: " + $Name);
+   
+   // Set project prototype
+   $Prototype = "pFolder";
+   $Badge = "address-book";
+   
+   // Create project structure using simple approach
+   create($Path, $Name + " User Stories");
+   $OnAdd($Path + "/" + $Name + " User Stories") = "buildUserStory();";
+   $Prototype($Path + "/" + $Name + " User Stories") = "pFolder";
+   $Badge($Path + "/" + $Name + " User Stories") = "folder2";
+   
+   create($Path, $Name + " Roles");
+   $OnAdd($Path + "/" + $Name + " Roles") = "buildRole();";
+   $Prototype($Path + "/" + $Name + " Roles") = "pFolder";
+   $Badge($Path + "/" + $Name + " Roles") = "folder2";
+   
+   create($Path, $Name + " Functional Requirements");
+   $OnAdd($Path + "/" + $Name + " Functional Requirements") = "buildFR();";
+   $Prototype($Path + "/" + $Name + " Functional Requirements") = "pFolder";
+   $Badge($Path + "/" + $Name + " Functional Requirements") = "folder2";
+   
+   create($Path, $Name + " Non-Functional Requirements");
+   $OnAdd($Path + "/" + $Name + " Non-Functional Requirements") = "buildNFR();";
+   $Prototype($Path + "/" + $Name + " Non-Functional Requirements") = "pFolder";
+   $Badge($Path + "/" + $Name + " Non-Functional Requirements") = "folder2";
+   
+   logMessage("Project structure completed for: " + $Name);
+}
+
+function buildUserStory() {
+   $Prototype = "pStory";
+   $HTMLExportTemplate = "Preview Story";
+   logMessage("Creating user story: " + $Name + " Set prototype to: " + $Prototype);
+}
+
+function buildRole() {
+   $Prototype = "pRole";
+   logMessage("Creating role: " + $Name + " Set prototype to: " + $Prototype);
+   $Text = "Role Description:\n\nResponsibilities:\n- \n\nRequirements:\n- ";
+}
+
+function buildFR() {
+   addPrefix("FR-");
+   $Prototype = "pFR";
+   logMessage("Creating functional requirement: " + $Name + " Set prototype to: " + $Prototype);
+   $Text = "Functional Requirement:\n\nAcceptance Criteria:\n- \n\nPriority: ";
+}
+
+function buildNFR() {
+   addPrefix("NFR-");
+   $Prototype = "pNFR";
+   logMessage("Creating non-functional requirement: " + $Name + " Set prototype to: " + $Prototype);
+   $Text = "Non-Functional Requirement:\n\nMeasurement Criteria:\n- \n\nPriority: ";
+}';
+$Badge("/Hints/Library/ProjectBuilder") = "code";
+$Searchable("/Hints/Library/ProjectBuilder") = false;
+$SmartQuotes("/Hints/Library/ProjectBuilder") = false;
+
+// Create Template Builder module
+create("/Hints/Library/TemplateBuilder");
+$Text("/Hints/Library/TemplateBuilder") = 'function createPreviewTemplate() {
+   create("/Templates/Preview Folder");
+   $Text("/Templates/Preview Folder") = "!3 ^value($Name)^\n\n^children()^\n";
+   $Badge("/Templates/Preview Folder") = "display-chart";
+}
+
+function createStoryTemplate() {
+   create("/Templates/Preview Story");
+   $Text("/Templates/Preview Story") = "!4 ^value($Name)^\n\nAs ^value($StoryRole)^\nI want to ^value($StoryWant)^\nSo that ^value($StoryReason)^\n";
+   $Badge("/Templates/Preview Story") = "display-chart";
+}';
+$Badge("/Hints/Library/TemplateBuilder") = "code";
+$Searchable("/Hints/Library/TemplateBuilder") = false;
+$SmartQuotes("/Hints/Library/TemplateBuilder") = false;
+
+// Create Templates folder and basic templates
+create("/Templates");
+$Badge("/Templates") = "display-chart";
+create("/Templates/Preview Folder");
+$Text("/Templates/Preview Folder") = "!3 ^value($Name)^\n\n^children()^\n";
+$Badge("/Templates/Preview Folder") = "display-chart";
+create("/Templates/Preview Story");
+$Text("/Templates/Preview Story") = "!4 ^value($Name)^\n\nAs ^value($StoryRole)^\nI want to ^value($StoryWant)^\nSo that ^value($StoryReason)^\n";
+$Badge("/Templates/Preview Story") = "display-chart";
+create("/Templates/Preview Leaf");
+$Text("/Templates/Preview Leaf") = "!4 ^value($Name)^\n\n^value($Text)^\n";
+$Badge("/Templates/Preview Leaf") = "display-chart";
+
+// Create Prototypes folder and basic prototypes
+create("/Prototypes");
+$Badge("/Prototypes") = "file-cabinet";
+$OnAdd("/Prototypes") = "$IsPrototype = true;";
+create("/Prototypes/pFolder");
+$Badge("/Prototypes/pFolder") = "folder2";
+$HTMLExportTemplate("/Prototypes/pFolder") = "/Templates/Preview Folder";
+$IsPrototype("/Prototypes/pFolder") = true;
+create("/Prototypes/pStory");
+$Badge("/Prototypes/pStory") = "chat-ellipsis";
+$HTMLExportTemplate("/Prototypes/pStory") = "/Templates/Preview Story";
+$DisplayedAttributes("/Prototypes/pStory") = "StoryRole;StoryWant;StoryReason";
+$IsPrototype("/Prototypes/pStory") = true;
+create("/Prototypes/pRole");
+$Badge("/Prototypes/pRole") = "user";
+$HTMLExportTemplate("/Prototypes/pRole") = "/Templates/Preview Leaf";
+$IsPrototype("/Prototypes/pRole") = true;
+create("/Prototypes/pFR");
+$Badge("/Prototypes/pFR") = "gear";
+$HTMLExportTemplate("/Prototypes/pFR") = "/Templates/Preview Leaf";
+$IsPrototype("/Prototypes/pFR") = true;
+create("/Prototypes/pNFR");
+$Badge("/Prototypes/pNFR") = "speedometer";
+$HTMLExportTemplate("/Prototypes/pNFR") = "/Templates/Preview Leaf";
+$IsPrototype("/Prototypes/pNFR") = true;
+
+// Create CSS style
+create("/Hints/Preview/style");
+$Text("/Hints/Preview/style") = "body{font-family:Helvetica,Arial,sans-serif;margin-left:7.5%;margin-right:7.5%;line-height:1.4;color:#333;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "h1,h2,h3,h4,h5,h6{color:#2c3e50;margin-top:1.5em;margin-bottom:0.5em;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "table{margin:2em 0;font-size:0.9em;border:1px solid #888;border-collapse:collapse;width:100%;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "td,th{padding:0.5em;border:1px solid #ddd;text-align:left;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "th{background-color:#f5f5f5;font-weight:bold;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "img{width:100%;height:auto;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "code{background-color:#f8f8f8;padding:2px 4px;border-radius:3px;}";
+$Text("/Hints/Preview/style") = $Text("/Hints/Preview/style") + "pre{background-color:#f8f8f8;padding:1em;border-radius:5px;overflow-x:auto;}";
+$Searchable("/Hints/Preview/style") = false;
+
+// Create user attributes for user stories (simplified approach)
+createAttribute("StoryRole", "string");
+createAttribute("StoryWant", "string");  
+createAttribute("StoryReason", "string");
+
+// Set up custom attributes for user story templates
+$StoryRole("/Prototypes/pStory") = "user role";
+$StoryWant("/Prototypes/pStory") = "describe what they want";
+$StoryReason("/Prototypes/pStory") = "explain the value";
+
+$Text("/Log") = $Text("/Log") + "Created complete function library\n";
+$Text("/Log") = $Text("/Log") + "- CoreUtils: Basic utilities and helpers\n";
+$Text("/Log") = $Text("/Log") + "- ProjectBuilder: Full project structure automation\n";
+$Text("/Log") = $Text("/Log") + "- CSS Styles: Ready for HTML export\n";
+$Text("/Log") = $Text("/Log") + "\n";
+$Text("/Log") = $Text("/Log") + "READY TO USE:\n";
+$Text("/Log") = $Text("/Log") + "1. Create notes in /Projects - they auto-build structure\n";
+$Text("/Log") = $Text("/Log") + "2. Functions available globally from /Hints/Library/\n";
+$Text("/Log") = $Text("/Log") + "3. CSS ready for HTML export templates\n";
+$Text("/Log") = $Text("/Log") + "\n";
+$Text("/Log") = $Text("/Log") + "Complete installation finished successfully!\n";
+
+// Disable rule
+$RuleDisabled = true;

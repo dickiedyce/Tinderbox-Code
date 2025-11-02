@@ -1,0 +1,64 @@
+// Simple Workspace Installer - Run as Rule
+// Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
+
+// Create log if it doesn't exist
+if(!exists("/Log")) {
+    create("/Log");
+    $Badge("/Log") = "edit";
+    $Text("/Log") = "=== Simple Installation Log ===\n";
+}
+
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Starting simple installation\n";
+
+// Create basic Hints structure
+if(!exists("/Hints")) {
+    create("/Hints");
+    $Badge("/Hints") = "folder2";
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created /Hints\n";
+}
+
+if(!exists("/Hints/Library")) {
+    create("/Hints/Library");
+    $Badge("/Hints/Library") = "books";
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created /Hints/Library\n";
+}
+
+if(!exists("/Hints/Preview")) {
+    create("/Hints/Preview");
+    $Badge("/Hints/Preview") = "display-chart";
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created /Hints/Preview\n";
+}
+
+// Create CSS style note
+if(!exists("/Hints/Preview/style")) {
+    create("/Hints/Preview", "style");
+    $Text("/Hints/Preview/style") = "body{font-family:\"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;margin-left:7.5%;margin-right:7.5%;line-height:1.4;}table{margin:2em 0;font-size:0.9em;border:1px solid #888888;}td{padding:0.5em;}img{width:100%;}";
+    $Searchable("/Hints/Preview/style") = false;
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created CSS style note\n";
+}
+
+// Create Projects and Resources
+if(!exists("/Projects")) {
+    create("/Projects");
+    $Badge("/Projects") = "folder2";
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created /Projects\n";
+}
+
+if(!exists("/Resources")) {
+    create("/Resources");
+    $Badge("/Resources") = "folder2";
+    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Created /Resources\n";
+}
+
+// Final summary
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] === INSTALLATION SUMMARY ===\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Hints structure: " + (exists("/Hints") ? "✓" : "✗") + "\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Library folder: " + (exists("/Hints/Library") ? "✓" : "✗") + "\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Style note: " + (exists("/Hints/Preview/style") ? "✓" : "✗") + "\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Projects folder: " + (exists("/Projects") ? "✓" : "✗") + "\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Resources folder: " + (exists("/Resources") ? "✓" : "✗") + "\n";
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Simple installation completed successfully\n";
+
+// Disable this rule so it only runs once
+$RuleDisabled = true;
+$Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] Rule disabled - installation complete\n";

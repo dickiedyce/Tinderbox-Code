@@ -1,0 +1,183 @@
+// Project Structure Builder for Tinderbox Workspace
+// Functions for creating project containers and their folder hierarchies
+
+// Function: createProjectsContainer
+// Purpose: Create the main /Projects folder with proper configuration
+function createProjectsContainer() {
+   logMessage("Creating /Projects folder...");
+   
+   create("/Projects");
+   $Badge("/Projects") = "folder2";
+   $OnAdd("/Projects") = "buildProject()";
+   $HTMLExportTemplate("/Projects") = "/Templates/Preview Folder";
+   $DisplayedAttributes("/Projects") = "OnAdd";
+   
+   logMessage("/Projects folder created successfully");
+}
+
+// Function: createResourcesContainer  
+// Purpose: Create the main /Resources folder with proper configuration
+function createResourcesContainer() {
+   logMessage("Creating /Resources folder...");
+   
+   create("/Resources");
+   $Badge("/Resources") = "folder2";
+   $OnAdd("/Resources") = "buildResource()";
+   $HTMLExportTemplate("/Resources") = "/Templates/Preview Folder";
+   $DisplayedAttributes("/Resources") = "OnAdd";
+   
+   logMessage("/Resources folder created successfully");
+}
+
+// Function: buildUserStory
+// Purpose: Configure a note to function as a User Story
+function buildUserStory() {
+   $IsPrototype = false;
+   $Prototype = "pStory";
+   $Badge = "chat-ellipsis";
+   $DisplayedAttributes = "StoryRole;StoryWant;StoryReason;Prototype;HTMLExportTemplate";
+   $OnVisit = "updateRoleList();";
+}
+
+// Function: updateRoleList
+// Purpose: Update suggested values for StoryRole based on Roles folder
+function updateRoleList() {
+   attribute("StoryRole")["suggested"] = $Name(children(nextSibling(parent)));
+}
+
+// Function: buildRole
+// Purpose: Configure a note to function as a Role
+function buildRole() {
+   $IsPrototype = false;
+   $Prototype = "pRole";
+   $DisplayedAttributes = "HTMLExportTemplate";
+   attribute("StoryRole")["suggested"] = collect(siblings, $Name);
+}
+
+// Function: buildFR
+// Purpose: Configure a note as a Functional Requirement
+function buildFR() {
+   $IsPrototype = false;
+   $Prototype = "pFR";
+   addPrefix("FR-");
+   $OnVisit = "addPrefix('FR-');";
+   $DisplayedAttributes = "";
+}
+
+// Function: buildNFR  
+// Purpose: Configure a note as a Non-Functional Requirement
+function buildNFR() {
+   $IsPrototype = false;
+   $Prototype = "pFR";
+   addPrefix("NFR-");
+   $OnVisit = "addPrefix('NFR-');";
+   $DisplayedAttributes = "";
+}
+
+// Function: buildResource
+// Purpose: Configure a note as a Resource
+function buildResource() {
+   $IsPrototype = false;
+   $Prototype = "pResource";
+   $Badge = "folder2";
+}
+
+// Function: configureProjectPrototype
+// Purpose: Set up the project note with proper prototype settings
+function configureProjectPrototype() {
+   $IsPrototype = false;
+   $Prototype = "pProject";
+   $Badge = "address-book";
+   $HTMLExportTemplate = "/Templates/Preview Folder";
+}
+
+// Function: createProjectFolders
+// Purpose: Create standard folder structure for a project
+function createProjectFolders() {
+   var(vRoot, vUserStories, vRoles, vFunctionalRequirements, vNonFunctionalRequirements){
+      vRoot = $Path;
+      
+      // Create User Stories folder
+      vUserStories = childFolder(vRoot, "User Stories");
+      $OnAdd(vUserStories) = "buildUserStory();";
+
+      // Create Roles folder  
+      vRoles = childFolder(vRoot, "Roles");
+      $OnAdd(vRoles) = "buildRole();";
+
+      // Create Functional Requirements folder
+      vFunctionalRequirements = childFolder(vRoot, "Functional Requirements");
+      $OnAdd(vFunctionalRequirements) = "buildFR();";
+
+      // Create Non-Functional Requirements folder
+      vNonFunctionalRequirements = childFolder(vRoot, "Non-Functional Requirements");
+      $OnAdd(vNonFunctionalRequirements) = "buildNFR();";
+   }
+}
+
+// Function: setupProjectStructure
+// Purpose: Complete project setup including prototype and folders
+function setupProjectStructure() {
+   configureProjectPrototype();
+   createProjectFolders();
+}
+
+// Function: buildProject
+// Purpose: Main project builder with validation and error handling
+function buildProject() {
+   logMessage("buildProject() called for: " + $Name);
+   
+   // Validate preconditions
+   if ($IsProcessing == true || $Name == "untitled") {
+      logMessage("buildProject() skipped - processing flag or untitled name");
+      return;
+   }
+   
+   $IsProcessing = true;
+   logMessage("Setting up project structure...");
+   
+   // Only proceed if the note does not have a prototype defined
+   if ($Prototype == "") {
+      setupProjectStructure();
+      logMessage("Project structure created successfully for: " + $Name);
+   } else {
+      logMessage("buildProject() skipped - prototype already defined: " + $Prototype);
+   }
+   
+   // Reset processing flag
+   $IsProcessing = false;
+}
+
+// Function: validateProjectStructure
+// Purpose: Verify project folders were created correctly
+function validateProjectStructure(projectPath) {
+   var(requiredFolders, missingFolders, projectName){
+      projectName = $Name(projectPath);
+      requiredFolders = "User Stories;Roles;Functional Requirements;Non-Functional Requirements";
+      missingFolders = "";
+      
+      requiredFolders.split(";").each(folderType){
+         var(expectedPath){
+            expectedPath = projectPath + "/" + projectName + " " + folderType;
+            if(!exists(expectedPath)){
+               missingFolders = missingFolders + folderType + ";";
+            }
+         }
+      }
+      
+      if(missingFolders != "") {
+         logMessage("WARNING: Missing project folders in " + projectName + ": " + missingFolders);
+         return false;
+      } else {
+         logMessage("Project structure validated for: " + projectName);
+         return true;
+      }
+   }
+}
+
+// Function: instantiateProjectContainers
+// Purpose: Create both Projects and Resources containers
+function instantiateProjectContainers() {
+   createProjectsContainer();
+   createResourcesContainer();
+}

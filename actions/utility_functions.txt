@@ -1,0 +1,415 @@
+//Create Attributes
+var:dictionary customAttributes={IsProcessing:boolean; AttriName:string; AttributionKey:set; Author:string; CSSStyle:set; Category:set; CitationKey:set; DisplayExpressionCache:string; HeadingDepth:number; HeadingOffset:number; IsListChildren:boolean; IsBuilt:boolean; IsListText:boolean; IsNoShowChild:boolean; IsNoShowText:boolean; IsNoShowTitle:boolean;  StoryRole:string; StoryWant:string; StoryReason:string; SelectionCount:number};
+
+var:dictionary resourceAttributes={};
+var:dictionary frAttributes ={};
+var:dictionary roleAttributes ={};
+var:dictionary storyAttributes={StoryRole:string; StoryWant:string; StoryReason:string; StoryReady:boolean; HasIssues:boolean};
+var:dictionary projectAttributes={SelectionCount:number};
+
+$customAttributes.keys.each(key){
+   createAttribute(key, customAttributes[key]);
+}
+
+// Helper functions for common values
+function getBadge(type) {
+    if(type == "FOLDER") return "folder2";
+    if(type == "PROJECT") return "address-book";
+    if(type == "STORY") return "chat-ellipsis";
+    if(type == "ROLE") return "users";
+    if(type == "REQUIREMENT") return "calculator-large";
+    if(type == "ACTION") return "crosshair";
+    if(type == "HTML") return "globe";
+    if(type == "TEMPLATE") return "display-chart";
+    if(type == "CABINET") return "file-cabinet";
+}
+
+function getTemplate(type) {
+    if(type == "PREVIEW_FOLDER") return "/Templates/Preview Folder";
+    if(type == "PREVIEW_LEAF") return "/Templates/Preview Leaf";
+    if(type == "PREVIEW_STORY") return "/Templates/Preview Story";
+}
+
+function getPrefix(type) {
+    if(type == "FUNCTIONAL_REQ") return "FR-";
+    if(type == "NON_FUNCTIONAL_REQ") return "NFR-";
+}
+
+// Helper function to generate common CSS styles
+function getPreviewStyles() {
+    return "body{" +
+        "font-family: \"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;" +
+        "margin-left: 7.5%;" +
+        "margin-right: 7.5%;" +
+        "line-height: 1.4;" +
+        "}" +
+        "table {" +
+        "margin: 2em 0;" +
+        "font-size: 0.9em;" +
+        "border: 1px solid #888888;" +
+        "}" +
+        "td{" +
+        "padding: 0.5em;" +
+        "}" +
+        "img{" +
+        "width: 100%;" +
+        "}";
+}
+
+// Helper function to create style notes
+function createStyleNote() {
+    create("/Hints");
+    create("/Hints/Preview");
+    create("/Hints/Preview","style");
+    $Text("/Hints/Preview/style") = getPreviewStyles();
+}
+
+function finishHints(){
+    logMessage("  Creating Hints structure...");
+    createStyleNote();
+    logMessage("  Hints structure created successfully");
+}
+
+function instantiateTemplates() {
+   logMessage("  Creating /Templates folder...");
+   
+   create("/Templates");
+   $Badge("/Templates")="display-chart";
+   $OnAdd("/Templates")="buildTemplate()";
+
+   create("/Templates/Preview");
+   $IsPrototype("/Templates/Preview") = false;
+   $IsTemplate("/Templates/Preview") = true;
+   $Badge("/Templates/Preview") = "display-chart";
+   $OnAdd("/Templates/Preview") ='$Prototype="HTML";';
+   $SmartQuotes = false;
+   $Text("/Templates/Preview") = "<html><head><meta charset=\"utf-8\"><title>^title^</title><style>^text(/Hints/Preview/style,plain)</style></head><body>^text</body></html>";
+
+   // Template creation
+
+   create("/Templates/Preview Folder");
+   $IsPrototype("/Templates/Preview Folder") = false;
+   $IsTemplate("/Templates/Preview Folder") = true;
+   $Badge("/Templates/Preview Folder") = "display-chart";
+   $OnAdd("/Templates/Preview Folder") ='$Prototype="HTML";';
+   $Text("/Templates/Preview Folder") = "!3 ^value($Name)^ \n\n ^children()^ \n";
+
+
+   create("/Templates/Preview Leaf");
+   $IsPrototype("/Templates/Preview Leaf") = false;
+   $IsTemplate("/Templates/Preview Leaf") = true;
+   $Badge("/Templates/Preview Leaf") = "display-chart";
+   $OnAdd("/Templates/Preview Leaf") ='$Prototype="HTML";';
+   $Text("/Templates/Preview Leaf") = "!3 ^value($Name)^ \n\n ^value($Text)^ \n";
+
+   create("/Templates/Preview Story");
+   $IsPrototype("/Templates/Preview Story") = false;
+   $IsTemplate("/Templates/Preview Story") = true;
+   $Badge("/Templates/Preview Story") = "display-chart";
+   $OnAdd("/Templates/Preview Story") ='$Prototype="HTML";';
+   $SmartQuotes = false;
+   $Text("/Templates/Preview Story") = "!4 ^value($Name)^ \n\n As ^value($StoryRole)^ \n I want to ^value($StoryWant)^ \n So that ^value($StoryReason)^ \n\n [RETINA Story|^value($RetinaURL)^] \n [LEAP Interface file|^value($InterfaceDiagramURL)^] \n";
+   
+   logMessage("  /Templates folder and all templates created successfully");
+}
+
+
+function instantiatePrototypes() {
+   logMessage("  Creating /Prototypes folder...");
+   
+   //Create Prototypes
+   create("/Prototypes");
+   $Badge("/Prototypes")="file-cabinet";
+   $OnAdd("/Prototypes")='$IsPrototype=true;$DisplayedAttributes="OnAdd;Badge;HTMLExportTemplate"';
+   $DisplayedAttributes("/Prototypes")="OnAdd";
+   
+   logMessage("  /Prototypes folder created");
+
+   create("/Prototypes","Action");
+   $Badge("/Prototypes/Action")="crosshair";
+   $Color("/Prototypes/Action")="lighter black";
+   $IsAction("/Prototypes/Action")=true;
+   $SmartQuotes("/Prototypes/Action")=false;
+   $DisplayedAttributes("/Prototypes/Action")="OnAdd";
+
+   create("/Prototypes","pFolder");
+   $Badge("/Prototypes/pFolder")="folder2";
+   $Color("/Prototypes/pFolder")="lighter black";
+   $IsPrototype("/Prototypes/pFolder")=true;
+   $SmartQuotes("/Prototypes/pFolder")=false;
+   $DisplayedAttributes("/Prototypes/pFolder")=$customAttributes.keys;
+   $HTMLExportTemplate("/Prototypes/pFolder")="/Templates/Preview Folder";
+
+   create("/Prototypes","HTML");
+   $Badge("/Prototypes/HTML")="globe";
+   $Color("/Prototypes/HTML")="lighter black";
+   $IsPrototype("/Prototypes/HTML")=true;
+   $SmartQuotes("/Prototypes/HTML")=false;
+   $DisplayedAttributes("/Prototypes/HTML")=$customAttributes.keys;
+
+   $resourceAttributes.keys.each(key){
+      createAttribute(key, resourceAttributes[key]);
+   }
+   create("/Prototypes","pResource");
+   $Badge("/Prototypes/pResource")="folder2";
+   $IsPrototype("/Prototypes/pResource")=true;
+   $DisplayedAttributes("/Prototypes/pResource")=$resourceAttributes.keys;
+
+   $roleAttributes.keys.each(key){
+      createAttribute(key, roleAttributes[key]);
+   }
+   create("/Prototypes","pRole");
+   $Badge("/Prototypes/pRole")="users";
+   $IsPrototype("/Prototypes/pRole")=true;
+   $DisplayedAttributes("/Prototypes/pRole")=$roleAttributes.keys;
+   $HTMLExportTemplate("/Prototypes/pRole") = "/Templates/Preview Leaf";
+
+   $storyAttributes.keys.each(key){
+      createAttribute(key, storyAttributes[key]);
+   }
+   create("/Prototypes","pStory");
+   $Badge("/Prototypes/pStory")="chat-ellipsis";
+   $IsPrototype("/Prototypes/pStory")=true;
+   $DisplayedAttributes("/Prototypes/pStory")=$storyAttributes.keys;
+   $HTMLExportTemplate("/Prototypes/pStory") = "/Templates/Preview Folder";
+
+
+   $projectAttributes.keys.each(key){
+      createAttribute(key, projectAttributes[key]);
+   }
+   create("/Prototypes","pProject");
+   $Badge("/Prototypes/pProject")="address-book";
+   $IsPrototype("/Prototypes/pProject")=true;
+   $DisplayedAttributes("/Prototypes/pProject")=$projectAttributes.keys;
+   $HTMLExportTemplate("/Prototypes/pProject") = "/Templates/Preview Story";
+
+
+   $frAttributes.keys.each(key){
+      createAttribute(key, frAttributes[key]);
+   }
+   create("/Prototypes","pFR");
+   $Badge("/Prototypes/pFR")="calculator-large";
+   $IsPrototype("/Prototypes/pFR")=true;
+   $DisplayedAttributes("/Prototypes/pFR")=$frAttributes.keys;
+
+
+}
+
+function instantiateProjects(){
+   logMessage("  Creating /Projects folder...");
+   create("/Projects");
+   $Badge("/Projects") = getBadge("FOLDER");
+   $OnAdd("/Projects") = "buildProject()";
+   $HTMLExportTemplate("/Projects") = getTemplate("PREVIEW_FOLDER");
+   $DisplayedAttributes("/Projects") = "OnAdd";
+   logMessage("  /Projects folder created successfully");
+}
+
+function instantiateResources(){
+   logMessage("  Creating /Resources folder...");
+   create("/Resources");
+   $Badge("/Resources") = getBadge("FOLDER");
+   $OnAdd("/Resources") = "buildResource()";
+   $HTMLExportTemplate("/Resources") = getTemplate("PREVIEW_FOLDER");
+   $DisplayedAttributes("/Resources") = "OnAdd";
+   logMessage("  /Resources folder created successfully");
+}
+
+
+// Function: addPrefix
+// Purpose: Ensures that the note's name starts with the specified prefix.
+//          If it doesn't, the prefix is prepended to the current name.
+function addPrefix(prefix){
+   if ($Name.substr(0, prefix.length) != prefix) { 
+      $Name = prefix + $Name;
+   }
+}
+
+
+// Function: childFolder
+// Purpose: Creates a new child folder under the given root with a name that combines
+//          the root's name and the provided folder name. Also sets an icon badge.
+function childFolder(vRoot, vFolderName) {
+   var:string vName = $Name(vRoot);
+   var:string vFolder = create(vRoot, vName + " " + vFolderName);
+   $Prototype(vFolder) = pFolder;
+   $Badge(vFolder) = getBadge("FOLDER");
+   return vFolder;
+}
+
+// Function: buildUserStory
+// Purpose: Configures a note to function as a User Story by setting its prototype,
+//          badge, displayed attributes, and an on-visit action.
+function buildUserStory() {
+   $IsPrototype = false;
+   $Prototype = pStory;
+   $Badge = getBadge("STORY");
+   $DisplayedAttributes = "StoryRole;StoryWant;StoryReason;Prototype;HTMLExportTemplate";
+   $OnVisit = "updateRoleList();";
+}
+
+// Function: updateRoleList
+// Purpose: Updates the suggested list for the "UserStoryRole" attribute based on the
+//          names of the child notes in the related Roles folder.
+function updateRoleList() {
+   attribute("StoryRole")[suggested] = $Name(children(nextSibling(parent)));
+   //var:string vRoles = $Path(grandparent) + "/" + $Name(grandparent) + " Roles";
+   // $Path(nextSibling(parent))
+   // attribute("StoryRole")[suggested] = collect(children(vRoles), $Name);
+}
+
+// Function: buildRole
+// Purpose: Configures a note to function as a Role by setting its prototype, badge,
+//          and suggested attribute values.
+function buildRole() {
+   $IsPrototype = false;
+   $Prototype = pRole;
+   $DisplayedAttributes = "HTMLExportTemplate";
+   attribute("StoryRole")[suggested] = collect(siblings, $Name);
+}
+
+// Function: buildFR
+// Purpose: Configures a note as a Functional Requirement by setting its prototype,
+//          ensuring its name starts with "FR-", and setting an on-visit action.
+function buildFR() {
+   $IsPrototype = false;
+   $Prototype = pFR;
+   addPrefix(getPrefix("FUNCTIONAL_REQ"));
+   $OnVisit = "addPrefix('" + getPrefix("FUNCTIONAL_REQ") + "');";
+   $DisplayedAttributes = "";
+}
+
+// Function: buildNFR
+// Purpose: Configures a note as a Non-Functional Requirement by setting its prototype,
+//          ensuring its name starts with "NFR-", and setting an on-visit action.
+function buildNFR() {
+   $IsPrototype = false;
+   $Prototype = pFR;
+   addPrefix(getPrefix("NON_FUNCTIONAL_REQ"));
+   $OnVisit = "addPrefix('" + getPrefix("NON_FUNCTIONAL_REQ") + "');";
+   $DisplayedAttributes = "";
+}
+
+// Function: buildResource
+// Purpose: Configures a note as a Resource by setting its prototype and badge.
+function buildResource() {
+   $IsPrototype = false;
+   $Prototype = pResource;
+   $Badge = getBadge("FOLDER");
+}
+
+// Function: buildTemplate
+// Purpose: Configures a note as a Template by setting its badge and ensuring the name
+//          has a "t- " prefix.
+function buildTemplate() {
+   $IsPrototype = false;
+   $IsTemplate = true;
+   $Badge = getBadge("TEMPLATE");
+   $OnAdd = '$Prototype="HTML";';
+}
+
+// Helper functions for project setup
+function configureProjectPrototype() {
+   $IsPrototype = false;
+   $Prototype = "pProject";
+   $Badge = getBadge("PROJECT");
+   $HTMLExportTemplate = getTemplate("PREVIEW_FOLDER");
+}
+
+function createProjectFolders() {
+   var:string vRoot = $Path;
+   
+   // Create User Stories folder
+   var:string vUserStories = childFolder(vRoot, "User Stories");
+   $OnAdd(vUserStories) = "buildUserStory();";
+
+   // Create Roles folder  
+   var:string vRoles = childFolder(vRoot, "Roles");
+   $OnAdd(vRoles) = "buildRole();";
+
+   // Create Functional Requirements folder
+   var:string vFunctionalRequirements = childFolder(vRoot, "Functional Requirements");
+   $OnAdd(vFunctionalRequirements) = "buildFR();";
+
+   // Create Non-Functional Requirements folder
+   var:string vNonFunctionalRequirements = childFolder(vRoot, "Non-Functional Requirements");
+   $OnAdd(vNonFunctionalRequirements) = "buildNFR();";
+}
+
+function setupProjectStructure() {
+   configureProjectPrototype();
+   createProjectFolders();
+}
+
+// Function: buildProject
+// Purpose: Sets up a Project note by creating standard child folders (like User Stories,
+//          Roles, Functional/Non-Functional Requirements, Tests, and Misc) and assigning
+//          on-add actions for some folders.
+function buildProject() {
+   logMessage("buildProject() called for: " + $Name);
+   
+   // Validate preconditions
+   if ($IsProcessing == true || $Name == "untitled") {
+      logMessage("buildProject() skipped - processing flag or untitled name");
+      return;
+   }
+   
+   $IsProcessing = true;
+   logMessage("Setting up project structure...");
+   
+   // Only proceed if the note does not have a prototype defined
+   if ($Prototype == "") {
+      setupProjectStructure();
+      logMessage("Project structure created successfully for: " + $Name);
+   } else {
+      logMessage("buildProject() skipped - prototype already defined: " + $Prototype);
+   }
+   
+   // Reset processing flag
+   $IsProcessing = false;
+}
+
+// Helper function for logging
+function logMessage(message) {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $Text("/Log") = "";
+   }
+   $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+
+// Master initialization function
+function initializeWorkspace() {
+   // Create log note first
+   create("/Log");
+   $Badge("/Log") = "edit";
+   $Text("/Log") = "";
+   
+   logMessage("Starting workspace initialization");
+   
+   logMessage("Calling finishHints()...");
+   finishHints();
+   
+   logMessage("Calling instantiateTemplates()...");
+   instantiateTemplates();
+   
+   logMessage("Calling instantiatePrototypes()...");
+   instantiatePrototypes();
+   
+   logMessage("Calling instantiateProjects()...");
+   instantiateProjects();
+   
+   logMessage("Calling instantiateResources()...");
+   instantiateResources();
+   
+   logMessage("Workspace initialization completed successfully");
+   logMessage("=== SUMMARY ===");
+   logMessage("Check if /Prototypes exists: " + exists("/Prototypes"));
+   logMessage("Check if /Projects exists: " + exists("/Projects"));  
+   logMessage("Check if /Templates exists: " + exists("/Templates"));
+   logMessage("Check if /Resources exists: " + exists("/Resources"));
+   logMessage("Check if /Hints exists: " + exists("/Hints"));
+   return true;
+}
+

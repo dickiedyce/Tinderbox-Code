@@ -1,0 +1,133 @@
+// Core Utilities for Tinderbox Workspace
+// Functions for logging, validation, and basic operations
+
+// Function: logMessage
+// Purpose: Centralized logging to /Log note with timestamp
+function logMessage(message) {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $Text("/Log") = "";
+   }
+   $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
+}
+
+// Function: setupContainer
+// Purpose: Create container with badge and optional additional setup
+function setupContainer(vPath, vBadge, vAdditionalSetup) {
+    create(vPath);
+    $Badge(vPath) = vBadge;
+    if(vAdditionalSetup != "") {
+        eval(vAdditionalSetup);
+    }
+}
+
+// Function: addPrefix
+// Purpose: Ensures that the note's name starts with the specified prefix
+function addPrefix(prefix){
+   if ($Name.substr(0, prefix.size()) != prefix) { 
+      $Name = prefix + $Name;
+   }
+}
+
+// Function: childFolder
+// Purpose: Creates a new child folder under the given root with combined name
+function childFolder(vRoot, vFolderName) {
+   var(vName, vFolder){
+      vName = $Name(vRoot);
+      vFolder = create(vRoot, vName + " " + vFolderName);
+      $Prototype(vFolder) = "pFolder";
+      $Badge(vFolder) = "folder2";
+   }
+   return vFolder;
+}
+
+// Function: ensureLogExists
+// Purpose: Creates log note if it doesn't exist with proper formatting
+function ensureLogExists() {
+   if(!exists("/Log")) {
+      create("/Log");
+      $Badge("/Log") = "edit";
+      $TextFont("/Log") = "Courier New";
+      $TextFontSize("/Log") = 11;
+      $Text("/Log") = "=== Tinderbox Workspace Log ===\n";
+   }
+}
+
+// Function: validatePrerequisites
+// Purpose: Check if workspace is ready for initialization
+function validatePrerequisites() {
+   var(isValid){
+      isValid = true;
+      
+      if($Name == "untitled") {
+         logMessage("ERROR: Cannot initialize untitled document");
+         isValid = false;
+      }
+      
+      if($IsProcessing == true) {
+         logMessage("WARNING: Processing already in progress");
+         isValid = false;
+      }
+   }
+   return isValid;
+}
+
+// Function: setSiblingOrder
+// Purpose: Set ordering for main workspace containers
+function setSiblingOrder() {
+   var(vRootCount, vContainers, vIndex){
+      vRootCount = $ChildCount(parent);
+      vContainers = "/Hints;/Prototypes;/Templates;/Projects;/Resources";
+      vIndex = 0;
+      
+      vContainers.split(";").each(vContainer){
+         if(exists(vContainer)) {
+            $SiblingOrder(vContainer) = vRootCount - vIndex;
+            vIndex = vIndex + 1;
+         }
+      }
+   }
+}
+
+// Function: createHintsStructure
+// Purpose: Creates the /Hints hierarchy for function libraries
+function createHintsStructure() {
+   logMessage("Creating /Hints structure...");
+   
+   setupContainer("/Hints", "folder2", "");
+   setupContainer("/Hints/Library", "books", "");
+   setupContainer("/Hints/Preview", "display-chart", "");
+   
+   logMessage("Hints structure created successfully");
+}
+
+// Function: getPreviewStyles
+// Purpose: Generate common CSS styles for HTML templates
+function getPreviewStyles() {
+    return "body{" +
+        "font-family: \"Ideal Sans Ssm Book\",HelveticaNeue,Helvetica,Arial,sans-serif;" +
+        "margin-left: 7.5%;" +
+        "margin-right: 7.5%;" +
+        "line-height: 1.4;" +
+        "}" +
+        "table {" +
+        "margin: 2em 0;" +
+        "font-size: 0.9em;" +
+        "border: 1px solid #888888;" +
+        "}" +
+        "td{" +
+        "padding: 0.5em;" +
+        "}" +
+        "img{" +
+        "width: 100%;" +
+        "}";
+}
+
+// Function: createStyleNote
+// Purpose: Create CSS style note in Hints/Preview
+function createStyleNote() {
+   create("/Hints/Preview","style");
+   $Text("/Hints/Preview/style") = getPreviewStyles();
+   $Searchable("/Hints/Preview/style") = false;
+}
