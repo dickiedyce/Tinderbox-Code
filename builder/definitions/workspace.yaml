@@ -49,3 +49,34 @@ workspace:
     - name: "StoryReason"
       type: "string"
       default: "explain the value"
+      
+    # Extended story attributes
+    - name: "Group"
+      type: "string"
+      
+    - name: "InterfaceDiagramURL"
+      type: "string"
+      
+    - name: "RetinaURL"
+      type: "string"
+      
+    - name: "APILayer"
+      type: "string"
+      
+    - name: "ClientSystem"
+      type: "string"
+      
+    - name: "SourceSystem"
+      type: "string"
+      
+    - name: "StoryReady"
+      type: "boolean"
+      
+    - name: "HasIssues"
+      type: "boolean"
+      
+    - name: "OriginalStory"
+      type: "string"
+      
+    - name: "Flags"
+      type: "string"

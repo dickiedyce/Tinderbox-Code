@@ -40,11 +40,11 @@ library_modules:
       - name: "buildProject"
         params: []
         body: |
-          logMessage("Building project structure for: " + $Name);
-          
-          // Set project prototype
-          $Prototype = "pFolder";
+          // Reset key attributes and set project prototype - MUST BE FIRST LINE
+          $KeyAttributes=;$Prototype="pProject";
           $Badge = "address-book";
+          
+          logMessage("Building project structure for: " + $Name);
           
           // Create project structure using simple approach
           create($Path, $Name + " User Stories");
@@ -72,14 +72,14 @@ library_modules:
       - name: "buildUserStory"
         params: []
         body: |
-          $Prototype = "pStory";
+          $KeyAttributes=;$Prototype="pStory";
           $HTMLExportTemplate = "Preview Story";
           logMessage("Creating user story: " + $Name + " Set prototype to: " + $Prototype);
           
       - name: "buildRole"
         params: []
         body: |
-          $Prototype = "pRole";
+          $KeyAttributes=;$Prototype="pRole";
           logMessage("Creating role: " + $Name + " Set prototype to: " + $Prototype);
           $Text = "Role Description:\n\nResponsibilities:\n- \n\nRequirements:\n- ";
           
@@ -87,7 +87,7 @@ library_modules:
         params: []
         body: |
           addPrefix("FR-");
-          $Prototype = "pFR";
+          $KeyAttributes=;$Prototype="pFR";
           logMessage("Creating functional requirement: " + $Name + " Set prototype to: " + $Prototype);
           $Text = "Functional Requirement:\n\nAcceptance Criteria:\n- \n\nPriority: ";
           
@@ -95,7 +95,7 @@ library_modules:
         params: []
         body: |
           addPrefix("NFR-");
-          $Prototype = "pNFR";
+          $KeyAttributes=;$Prototype="pNFR";
           logMessage("Creating non-functional requirement: " + $Name + " Set prototype to: " + $Prototype);
           $Text = "Non-Functional Requirement:\n\nMeasurement Criteria:\n- \n\nPriority: ";
 

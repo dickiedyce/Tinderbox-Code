@@ -70,6 +70,57 @@ class TinderboxInstallerBuilder:
             
         print("✅ All definitions validated successfully")
         return True
+    
+    def validate_string_escaping(self) -> bool:
+        """Validate that all rule strings use proper Tinderbox quoting conventions."""
+        errors = []
+        
+        # Check prototypes for rule string formatting
+        for proto_name, proto_data in self.prototypes.items():
+            if 'Rule' in proto_data:
+                rule = proto_data['Rule']
+                
+                # Rule should be wrapped in single quotes for Tinderbox
+                if not (rule.startswith("'") and rule.endswith("'")):
+                    errors.append(f"Prototype {proto_name}: Rule must be wrapped in single quotes, not double quotes")
+                
+                # Check for unescaped single quotes inside the rule
+                inner_rule = rule[1:-1] if len(rule) > 2 else rule
+                if "'" in inner_rule and "\\'" not in inner_rule:
+                    errors.append(f"Prototype {proto_name}: Rule contains unescaped single quotes - use double quotes for string literals inside rules")
+                
+                # Warn about complex nested quoting
+                if inner_rule.count('"') > 10:  # Arbitrary threshold for complexity
+                    print(f"⚠️  Warning: Prototype {proto_name} has complex nested quoting - verify manually in Tinderbox")
+        
+        # Check prototype attributes for proper boolean formatting
+        for proto_data in self.prototypes['prototypes']:
+            proto_name = proto_data.get('name', 'Unknown')
+            if 'defaultAttributes' in proto_data:
+                for attr_name, attr_value in proto_data['defaultAttributes'].items():
+                    if attr_name != 'Rule':  # Skip Rule attributes
+                        if isinstance(attr_value, bool):
+                            # Boolean values are handled correctly - no quotes needed
+                            continue
+                        elif attr_value in ['true', 'false', 'True', 'False']:
+                            errors.append(f"Prototype {proto_name}: Attribute {attr_name} should use boolean type (true/false) not string '{attr_value}'")
+        
+        # Check functions for string formatting issues
+        for func_name, func_data in self.functions.items():
+            if isinstance(func_data, dict) and 'code' in func_data:
+                code = func_data['code']
+                
+                # Check for mixed quote usage that might cause issues
+                if code.count('"') > 0 and code.count("'") > 0:
+                    print(f"⚠️  Warning: Function {func_name} uses both single and double quotes - verify escaping")
+        
+        if errors:
+            for error in errors:
+                print(f"String Escaping Error: {error}")
+            return False
+        
+        print("✅ String escaping validation passed")
+        return True
         
     def generate_header(self) -> str:
         """Generate the installer file header."""
@@ -194,7 +245,23 @@ $Text("{log_config['path']}") = $Text("{log_config['path']}") + "Starting instal
         for prototype in self.prototypes['prototypes']:
             if 'defaultAttributes' in prototype:
                 for attr_name, attr_value in prototype['defaultAttributes'].items():
-                    code += f'${attr_name}("{prototype["path"]}") = "{attr_value}";\n'
+                    if attr_name == 'Rule':
+                        # Handle Rule attribute specially - use single quotes to avoid escaping issues
+                        rule_code = str(attr_value).strip()
+                        # Replace newlines and tabs with spaces
+                        rule_code = rule_code.replace('\n', ' ').replace('\t', ' ')
+                        # Clean up multiple spaces
+                        import re
+                        rule_code = re.sub(r'\s+', ' ', rule_code)
+                        # Use single quotes to wrap the rule - no escaping needed for internal double quotes
+                        code += f"$Rule(\"{prototype['path']}\") = '{rule_code}';\n"
+                    else:
+                        # Handle boolean attributes without quotes
+                        if isinstance(attr_value, bool):
+                            bool_value = "true" if attr_value else "false"
+                            code += f'${attr_name}("{prototype["path"]}") = {bool_value};\n'
+                        else:
+                            code += f'${attr_name}("{prototype["path"]}") = "{attr_value}";\n'
                     
         return code + "\n"
         
@@ -236,6 +303,11 @@ $RuleDisabled = true;
 
     def build_installer(self) -> str:
         """Build the complete installer from all components."""
+        # Run string escaping validation before building
+        if not self.validate_string_escaping():
+            print("❌ Build failed due to string escaping errors")
+            return ""
+        
         installer = ""
         installer += self.generate_header()
         installer += self.generate_log_setup()

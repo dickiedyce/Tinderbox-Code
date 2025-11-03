@@ -1,6 +1,6 @@
 // Complete Tinderbox Workspace - Generated Installer
 // Production-ready workspace with project management automation
-// Generated on: 2025-11-03 19:37:46
+// Generated on: 2025-11-02 21:34:28
 // Copy this entire code to a note's $Rule attribute and set $RuleDisabled=false
 
 // Create log note
@@ -72,11 +72,11 @@ $SmartQuotes("/Hints/Library/CoreUtils") = false;
 // Create ProjectBuilder module
 create("/Hints/Library/ProjectBuilder");
 $Text("/Hints/Library/ProjectBuilder") = 'function buildProject() {
-   // Reset key attributes and set project prototype - MUST BE FIRST LINE
-   $KeyAttributes=;$Prototype="pProject";
-   $Badge = "address-book";
-
    logMessage("Building project structure for: " + $Name);
+
+   // Set project prototype
+   $Prototype = "pFolder";
+   $Badge = "address-book";
 
    // Create project structure using simple approach
    create($Path, $Name + " User Stories");
@@ -103,27 +103,27 @@ $Text("/Hints/Library/ProjectBuilder") = 'function buildProject() {
 }
 
 function buildUserStory() {
-   $KeyAttributes=;$Prototype="pStory";
+   $Prototype = "pStory";
    $HTMLExportTemplate = "Preview Story";
    logMessage("Creating user story: " + $Name + " Set prototype to: " + $Prototype);
 }
 
 function buildRole() {
-   $KeyAttributes=;$Prototype="pRole";
+   $Prototype = "pRole";
    logMessage("Creating role: " + $Name + " Set prototype to: " + $Prototype);
    $Text = "Role Description:\n\nResponsibilities:\n- \n\nRequirements:\n- ";
 }
 
 function buildFR() {
    addPrefix("FR-");
-   $KeyAttributes=;$Prototype="pFR";
+   $Prototype = "pFR";
    logMessage("Creating functional requirement: " + $Name + " Set prototype to: " + $Prototype);
    $Text = "Functional Requirement:\n\nAcceptance Criteria:\n- \n\nPriority: ";
 }
 
 function buildNFR() {
    addPrefix("NFR-");
-   $KeyAttributes=;$Prototype="pNFR";
+   $Prototype = "pNFR";
    logMessage("Creating non-functional requirement: " + $Name + " Set prototype to: " + $Prototype);
    $Text = "Non-Functional Requirement:\n\nMeasurement Criteria:\n- \n\nPriority: ";
 }
@@ -168,11 +168,6 @@ create("/Prototypes/pFolder");
 $Badge("/Prototypes/pFolder") = "folder2";
 $HTMLExportTemplate("/Prototypes/pFolder") = "/Templates/Preview Folder";
 $IsPrototype("/Prototypes/pFolder") = true;
-create("/Prototypes/pProject");
-$Badge("/Prototypes/pProject") = "address-book";
-$HTMLExportTemplate("/Prototypes/pProject") = "/Templates/Preview Folder";
-$DisplayedAttributes("/Prototypes/pProject") = "Flags";
-$IsPrototype("/Prototypes/pProject") = true;
 create("/Prototypes/pStory");
 $Badge("/Prototypes/pStory") = "chat-ellipsis";
 $HTMLExportTemplate("/Prototypes/pStory") = "/Templates/Preview Story";
@@ -204,10 +199,8 @@ createAttribute("SourceSystem", "string");
 createAttribute("StoryReady", "boolean");
 createAttribute("HasIssues", "boolean");
 createAttribute("OriginalStory", "string");
-createAttribute("Flags", "string");
 
 // Set up custom attributes for prototypes
-$Rule("/Prototypes/pProject") = 'var:number vIssues = sum_if(descendants,$Prototype=="pStory",$HasIssues); var:number vReady = sum_if(descendants,$Prototype=="pStory",$StoryReady); var:number vTotal = vIssues + vReady; if(vTotal == 0) { $Flags = "0.grey"; } else { if(vIssues == 0) { $Flags = format(vReady) + ".green"; } else { if(vIssues > vReady) { $Flags = format(vIssues) + ".red"; } else { $Flags = format(vReady) + ".orange"; } } }';
 $StoryRole("/Prototypes/pStory") = "user role";
 $StoryWant("/Prototypes/pStory") = "describe what they want";
 $StoryReason("/Prototypes/pStory") = "explain the value";
@@ -217,10 +210,9 @@ $RetinaURL("/Prototypes/pStory") = "";
 $APILayer("/Prototypes/pStory") = "";
 $ClientSystem("/Prototypes/pStory") = "";
 $SourceSystem("/Prototypes/pStory") = "";
-$StoryReady("/Prototypes/pStory") = false;
-$HasIssues("/Prototypes/pStory") = true;
+$StoryReady("/Prototypes/pStory") = "False";
+$HasIssues("/Prototypes/pStory") = "False";
 $OriginalStory("/Prototypes/pStory") = "";
-$Rule("/Prototypes/pStory") = 'if($HasIssues) { $Color="#FF0000"; } else { if ($StoryReady) { $Color="#00FF00"; } else { $Color=7; } }';
 
 // Create CSS style
 create("/Hints/Preview/style");

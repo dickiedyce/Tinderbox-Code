@@ -6,15 +6,59 @@ prototypes:
     template: "/Templates/Preview Folder"
     isPrototype: true
     
+  - name: "pProject"
+    path: "/Prototypes/pProject"
+    badge: "address-book"
+    template: "/Templates/Preview Folder"
+    displayedAttributes: "Flags"
+    defaultAttributes:
+      Rule: |
+        var:number vIssues = sum_if(descendants,$Prototype=="pStory",$HasIssues);
+        var:number vReady = sum_if(descendants,$Prototype=="pStory",$StoryReady);
+        var:number vTotal = vIssues + vReady;
+        if(vTotal == 0) {
+        	$Flags = "0.grey";
+        } else {
+        	if(vIssues == 0) {
+        		$Flags = format(vReady) + ".green";
+        	} else {
+        		if(vIssues > vReady) {
+        			$Flags = format(vIssues) + ".red";
+        		} else {
+        			$Flags = format(vReady) + ".orange";
+        		}
+        	}
+        }
+    isPrototype: true
+    
   - name: "pStory"
     path: "/Prototypes/pStory"
     badge: "chat-ellipsis"
     template: "/Templates/Preview Story"
-    displayedAttributes: "StoryRole;StoryWant;StoryReason"
+    displayedAttributes: "StoryRole;StoryWant;StoryReason;Group;StoryReady;HasIssues"
     defaultAttributes:
       StoryRole: "user role"
       StoryWant: "describe what they want"
       StoryReason: "explain the value"
+      Group: ""
+      InterfaceDiagramURL: ""
+      RetinaURL: ""
+      APILayer: ""
+      ClientSystem: ""
+      SourceSystem: ""
+      StoryReady: false
+      HasIssues: true
+      OriginalStory: ""
+      Rule: |
+        if($HasIssues) {
+        	$Color="#FF0000";
+        } else {
+        	if ($StoryReady) {
+        		$Color="#00FF00";
+        	} else {
+        		$Color=7;
+        	}
+        }
     isPrototype: true
     
   - name: "pRole"

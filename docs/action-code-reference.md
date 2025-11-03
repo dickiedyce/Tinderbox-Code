@@ -372,3 +372,65 @@ function logMessage(message) {
    $Text("/Log") = $Text("/Log") + "[" + format(now,"h:mm:ss") + "] " + message + "\n";
 }
 ```
+
+## String Handling and Escaping in Tinderbox
+
+### Critical Rules for String Formatting
+
+**Rule Attributes Must Use Single Quotes**
+```
+// ✅ CORRECT - Single quotes for rule wrapper
+$Rule("/Prototypes/pStory") = 'if($HasIssues) { $Color="#FF0000"; }';
+
+// ❌ WRONG - Double quotes cause truncation in Tinderbox
+$Rule("/Prototypes/pStory") = "if($HasIssues) { $Color=\"#FF0000\"; }";
+```
+
+**String Literals Inside Rules Use Double Quotes**
+```
+// ✅ CORRECT - Double quotes for string literals inside single-quoted rules
+$Rule = 'if($Status == "Complete") { $Color="#00FF00"; }';
+
+// ❌ WRONG - Single quotes inside single-quoted rules need escaping
+$Rule = 'if($Status == \'Complete\') { $Color=\'#00FF00\'; }';
+```
+
+### Best Practices
+
+1. **Always wrap Rule attributes in single quotes**
+2. **Use double quotes for string literals inside rules**
+3. **Avoid nested escaping when possible**
+4. **Test complex rules in Tinderbox before deploying**
+5. **Reset KeyAttributes before setting prototypes**: Use `$KeyAttributes=;$Prototype="pMyPrototype";` as the first action in OnAdd functions
+
+### Prototype Assignment Pattern
+
+**CRITICAL**: `$KeyAttributes=;$Prototype="PrototypeName";` must be the **absolute first line** in any function that sets a prototype. Any code before it (including logging) will prevent proper prototype assignment.
+
+```
+// ✅ CORRECT - KeyAttributes reset is the very first line
+function buildProject() {
+   $KeyAttributes=;$Prototype="pProject";
+   logMessage("Building project for: " + $Name);
+   // ... other setup
+}
+
+// ❌ WRONG - Logging before KeyAttributes reset prevents assignment
+function buildProject() {
+   logMessage("Building project for: " + $Name);
+   $KeyAttributes=;$Prototype="pProject";
+   // ... other setup
+}
+
+// ❌ WRONG - Direct prototype assignment may not inherit key attributes
+function buildProject() {
+   $Prototype = "pProject";
+   // ... other setup
+}
+```
+
+### Common Pitfalls
+
+- **Rule Truncation**: Using double quotes to wrap Rule attributes causes Tinderbox to truncate at the first internal double quote
+- **Mixed Quoting**: Be consistent within each rule to avoid confusion
+- **Complex Nesting**: Multiple levels of quotes can become difficult to maintain

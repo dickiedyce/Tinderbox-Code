@@ -18,6 +18,13 @@ templates:
       I want to ^value($StoryWant)^
       So that ^value($StoryReason)^
       
+      **Group:** ^value($Group)^
+      **Status:** ^if($StoryReady=="true")^✅ Ready^else^⏳ In Progress^endif^
+      ^if($HasIssues=="true")^⚠️ **Has Issues**^endif^
+      
+      ^if($RetinaURL!="")^[RETINA Story|^value($RetinaURL)^]^endif^
+      ^if($InterfaceDiagramURL!="")^[Interface Diagram|^value($InterfaceDiagramURL)^]^endif^
+      
   - name: "Preview Leaf"
     path: "/Templates/Preview Leaf"
     badge: "display-chart"
